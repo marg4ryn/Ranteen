@@ -1,0 +1,38 @@
+.verification-pending-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+  }
+  
+  .verification-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 32px;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+  }
+  
+  .verification-icon {
+    font-size: 48px;
+    color: #ffc107;
+    margin: 16px 0;
+  }
+  
+  .verification-card p {
+    color: #666;
+    margin-bottom: 16px;
+  }
+  
+  .refresh-button {
+    background-color: #1976d2;
+    color: white;
+    padding: 10px 20px;
+    margin-top: 16px;
+  }
+  
+  .refresh-button:hover {
+    background-color: #1565c0;
+  }

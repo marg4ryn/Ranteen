@@ -1,0 +1,94 @@
+/* DishCard.css */
+.dish-card {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 768px) {
+  .dish-card {
+    flex-direction: row;
+  }
+  
+  .dish-card.compact {
+    flex-direction: column;
+    max-width: 300px;
+  }
+}
+
+.dish-image {
+  width: 100%;
+  height: 200px;
+}
+
+@media (min-width: 768px) {
+  .dish-image {
+    width: 200px;
+    height: 200px;
+    flex-shrink: 0;
+  }
+  
+  .dish-card.compact .dish-image {
+    width: 100%;
+    height: 150px;
+  }
+}
+
+.dish-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dish-info {
+  flex: 1;
+  padding: 1rem;
+}
+
+.dish-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.dish-category {
+  display: inline-block;
+  background-color: #e3f2fd;
+  color: var(--primary-color);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.dish-description {
+  color: var(--text-light);
+  margin-bottom: 1rem;
+}
+
+.dish-rating {
+  margin-bottom: 1rem;
+}
+
+.average-rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.rating-value {
+  margin-left: 0.5rem;
+  color: var(--text-light);
+}
+
+.user-rating {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}

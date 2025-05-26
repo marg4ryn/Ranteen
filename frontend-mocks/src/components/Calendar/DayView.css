@@ -1,0 +1,21 @@
+.day-view {
+    width: 100%;
+  }
+  
+  .day-view h2 {
+    margin-bottom: 24px;
+    color: #1976d2;
+  }
+  
+  .day-view.compact h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+  
+  .no-menu {
+    padding: 24px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    text-align: center;
+    color: #666;
+  }

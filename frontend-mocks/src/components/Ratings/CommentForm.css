@@ -1,0 +1,47 @@
+.comment-form-container {
+    margin-top: 24px;
+    padding: 16px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+  }
+  
+  .comment-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    font-family: inherit;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+  
+  .cancel-btn {
+    background-color: #f5f5f5;
+    color: #333;
+    margin-right: 12px;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .submit-btn {
+    background-color: #1976d2;
+    color: white;
+  }
+  
+  .submit-btn:hover {
+    background-color: #1565c0;
+  }
+  
+  .comment-note {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+  }
