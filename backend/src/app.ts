@@ -63,7 +63,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
-app.get('/api/health', (req, res) => res.status(200).send('OK'));
+app.get('/api/health', (req: Request, res: Response) => { res.status(200).send('OK') });
 app.use('/api/auth', authRoutes);
 app.use('/api/dishes', dishRoutes);
 app.use('/api/menus', menuRoutes);

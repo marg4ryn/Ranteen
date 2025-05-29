@@ -1,0 +1,110 @@
+
+  /* MenuManagement.css */
+  .menu-management-container {
+    width: 100%;
+  }
+  
+  .date-selector {
+    margin-bottom: 24px;
+  }
+  
+  .date-selector label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  
+  .menu-editor {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  
+  .available-dishes, .selected-dishes {
+    flex: 1;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    background-color: #f9f9f9;
+  }
+  
+  .dish-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .dish-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background-color: #fff;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dish-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .dish-name {
+    font-weight: 500;
+  }
+  
+  .dish-category {
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .add-dish-btn {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .add-dish-btn:hover {
+    background-color: #43a047;
+  }
+  
+  .remove-dish-btn {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .remove-dish-btn:hover {
+    background-color: #e53935;
+  }
+  
+  .no-dishes {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 16px;
+  }
+  
+  .menu-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+  }
+  
+  .save-menu-btn {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px 20px;
+  }
+  
+  .save-menu-btn:hover {
+    background-color: #43a047;
+  }
+  
+  .delete-menu-btn {
+    background-color: #f44336;
+    color: white;
+    padding: 10px 20px;
+  }
+  
+  .delete-menu-btn:hover {
+    background-color: #e53935;
+  }

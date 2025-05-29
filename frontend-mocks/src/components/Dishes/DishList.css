@@ -1,0 +1,25 @@
+.dish-list {
+    width: 100%;
+  }
+  
+  .category-section {
+    margin-bottom: 32px;
+  }
+  
+  .category-title {
+    font-size: 18px;
+    color: #1976d2;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .category-dishes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .dish-list.compact .category-dishes {
+    justify-content: center;
+  }

@@ -1,0 +1,78 @@
+
+  /* CommentModeration.css */
+  .comment-moderation-container {
+    width: 100%;
+  }
+  
+  .filter-controls {
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .filter-controls label {
+    margin-right: 12px;
+    font-weight: 500;
+  }
+  
+  .filter-controls select {
+    width: 200px;
+    margin-bottom: 0;
+  }
+  
+  .pending-comments-list {
+    margin-top: 24px;
+  }
+  
+  .comment-card {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .comment-dish {
+    margin: 12px 0;
+    color: #666;
+  }
+  
+  .rating-display {
+    display: flex;
+    align-items: center;
+    margin-left: 12px;
+  }
+  
+  .rating-value {
+    font-weight: 500;
+  }
+  
+  .rating-star {
+    color: #ffc107;
+    margin-left: 4px;
+  }
+  
+  .comment-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+  
+  .comment-preview {
+    background-color: #f5f5f5;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 12px 0;
+    font-style: italic;
+  }
+  
+  .no-pending-comments {
+    padding: 24px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    text-align: center;
+    color: #666;
+    margin-top: 24px;
+  }
+  
