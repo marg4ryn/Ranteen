@@ -27,9 +27,7 @@ const Header = () => {
   return (
     <header className="app-header">
       <div className="logo">
-        <Link to="/" onClick={closeMenu}>
-          <h1>Ranteen</h1>
-        </Link>
+        <h1>Ranteen</h1>
       </div>
       
       <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle menu">
@@ -47,20 +45,6 @@ const Header = () => {
                 <Link to={`/day/${new Date().toISOString().split('T')[0]}`} onClick={closeMenu}>
                   Dzisiejsze danie
                 </Link>
-              </li>
-            </ul>
-          )}
-          
-          {isAdmin && (
-            <ul>
-              <li>
-                <Link to="/admin/menu" onClick={closeMenu}>Zarządzanie menu</Link>
-              </li>
-              <li>
-                <Link to="/admin/users" onClick={closeMenu}>Weryfikacja użytkowników</Link>
-              </li>
-              <li>
-                <Link to="/admin/comments" onClick={closeMenu}>Moderacja komentarzy</Link>
               </li>
             </ul>
           )}

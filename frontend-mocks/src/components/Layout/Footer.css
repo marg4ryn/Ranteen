@@ -28,7 +28,6 @@
     opacity: 1;
   }
   
-  /* Media queries for mobile responsiveness */
   @media (max-width: 768px) {
     .footer-content {
       flex-direction: column;

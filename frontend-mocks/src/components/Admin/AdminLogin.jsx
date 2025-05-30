@@ -15,14 +15,12 @@ const AdminLogin = () => {
     setError('');
     setIsLoading(true);
     
-    // Simulate login API call
     setTimeout(() => {
-      // Find admin user
       const adminUser = mockUsers.find(
         user => user.role === 'ADMINISTRATOR' && user.username === username
       );
       
-      if (adminUser && password === 'admin') { // Simple mock check
+      if (adminUser && password === 'admin') {
         setUser(adminUser);
       } else {
         setError('Nieprawidłowa nazwa użytkownika lub hasło');

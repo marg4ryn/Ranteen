@@ -10,9 +10,7 @@ const LoginPage = () => {
   const handleGoogleLogin = () => {
     setIsLoading(true);
     
-    // Simulate Google login
     setTimeout(() => {
-      // Find a mock student user
       const studentUser = mockUsers.find(user => user.role === 'STUDENT');
       setUser(studentUser);
       setIsLoading(false);

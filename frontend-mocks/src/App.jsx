@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthContext } from './contexts/AuthContext';
 import { MenuContext } from './contexts/MenuContext';
 
-// Components
 import Header from './components/Layout/Header';
 import Footer from './components/Layout/Footer';
 import Sidebar from './components/Layout/Sidebar';
@@ -13,10 +12,10 @@ import Calendar from './components/Calendar/Calendar';
 import DayView from './components/Calendar/DayView';
 import AdminLogin from './components/Admin/AdminLogin';
 import MenuManagement from './components/Admin/MenuManagement';
+import DishManagement from './components/Admin/DishManagement';
 import UserVerification from './components/Admin/UserVerification';
 import CommentModeration from './components/Admin/CommentModeration';
 
-// Mock data
 import { mockMenus } from './data/mockMenus';
 
 import './App.css';
@@ -26,13 +25,8 @@ function App() {
   const [menus, setMenus] = useState(mockMenus);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Check if user is authenticated
   const isAuthenticated = !!user;
-  
-  // Check if user is verified
   const isVerified = user && user.status === 'VERIFIED';
-  
-  // Check if user is admin
   const isAdmin = user && user.role === 'ADMINISTRATOR';
 
   return (
@@ -69,6 +63,10 @@ function App() {
                   <Route 
                     path="/admin/menu" 
                     element={isAdmin ? <MenuManagement /> : <Navigate to="/admin/login" />} 
+                  />
+                  <Route 
+                    path="/admin/dishes" 
+                    element={isAdmin ? <DishManagement /> : <Navigate to="/admin/login" />} 
                   />
                   <Route 
                     path="/admin/users" 

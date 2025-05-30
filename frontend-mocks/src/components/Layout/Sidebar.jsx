@@ -79,7 +79,13 @@ const Sidebar = () => {
             <h3>Panel administratora</h3>
             <ul className="sidebar-menu">
               <li>
+                <a onClick={() => handleNavigation('/')}>Podgląd stołówki</a>
+              </li>
+              <li>
                 <a onClick={() => handleNavigation('/admin/menu')}>Zarządzanie menu</a>
+              </li>
+              <li>
+                <a onClick={() => handleNavigation('/admin/dishes')}>Zarządzanie daniami</a>
               </li>
               <li>
                 <a onClick={() => handleNavigation('/admin/users')}>Weryfikacja użytkowników</a>
