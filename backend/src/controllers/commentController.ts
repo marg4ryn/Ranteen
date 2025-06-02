@@ -4,10 +4,7 @@ import Comment, { IComment, CommentStatus } from "../models/Comment";
 import Dish from "../models/Dish";
 import Menu from "../models/Menu";
 import { IUser } from "../models/User";
-import { Filter } from "bad-words"; // Profanity filter
 import mongoose from "mongoose";
-
-const profanityFilter = new Filter();
 
 // Helper to parse date and set to midnight UTC
 const parseDateToUTC = (dateString: string): Date | null => {
@@ -52,14 +49,14 @@ export const createComment: RequestHandler = async (
 
   try {
     // Profanity check
-    if (profanityFilter.isProfane(text)) {
-      // Reject outright
-      res.status(400).json({
-        message:
-          "Comment contains inappropriate language and cannot be submitted.",
-      });
-      return;
-    }
+    // if (profanityFilter.isProfane(text)) {
+    //   // Reject outright
+    //   res.status(400).json({
+    //     message:
+    //       "Comment contains inappropriate language and cannot be submitted.",
+    //   });
+    //   return;
+    // }
 
     const dish = await Dish.findById(dishId);
     if (!dish || !dish.isActive) {
@@ -213,12 +210,12 @@ export const updateMyComment: RequestHandler = async (
     }
 
     // Profanity check on update
-    if (profanityFilter.isProfane(text)) {
-      res.status(400).json({
-        message: "Updated comment contains inappropriate language.",
-      });
-      return;
-    }
+    // if (profanityFilter.isProfane(text)) {
+    //   res.status(400).json({
+    //     message: "Updated comment contains inappropriate language.",
+    //   });
+    //   return;
+    // }
 
     comment.text = text;
     comment.status = "pending"; // Re-moderation required after edit

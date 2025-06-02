@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Types } from 'mongoose';
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface IMenuItem {
   dish: Types.ObjectId; // Ref to Dish
@@ -6,11 +6,14 @@ export interface IMenuItem {
   notes?: string; // Optional notes for the dish in this menu
 }
 
-const MenuItemSchema: Schema<IMenuItem> = new Schema({
-  dish: { type: Schema.Types.ObjectId, ref: 'Dish', required: true },
-  categoryForDay: { type: String, required: true, trim: true },
-  notes: { type: String, trim: true },
-}, {_id: false}); // _id: false for subdocuments if not strictly needed, or true if they need unique IDs
+const MenuItemSchema: Schema<IMenuItem> = new Schema(
+  {
+    dish: { type: Schema.Types.ObjectId, ref: "Dish", required: true },
+    categoryForDay: { type: String, required: true, trim: true },
+    notes: { type: String, trim: true },
+  },
+  { _id: false }
+); // _id: false for subdocuments if not strictly needed, or true if they need unique IDs
 
 export interface IMenu extends Document {
   date: Date; // Date for which the menu is planned
@@ -23,10 +26,10 @@ export interface IMenu extends Document {
 
 const MenuSchema: Schema<IMenu> = new Schema(
   {
-    date: { 
-      type: Date, 
-      required: true, 
-      unique: true, // Only one menu per day
+    date: {
+      type: Date,
+      required: true,
+      // unique: true, // Only one menu per day
       // Custom validator to ensure only date part is considered for uniqueness if time is stored
       // Mongoose unique index on Date will consider the full timestamp.
       // It's often better to store dates as YYYY-MM-DD strings if time is irrelevant,
@@ -35,8 +38,8 @@ const MenuSchema: Schema<IMenu> = new Schema(
     },
     items: [MenuItemSchema],
     isPublished: { type: Boolean, default: false },
-    createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    updatedBy: { type: Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }
 );
@@ -46,12 +49,12 @@ MenuSchema.index({ date: 1 });
 MenuSchema.index({ isPublished: 1 });
 
 // Pre-save hook to ensure date is set to midnight UTC for consistent querying
-MenuSchema.pre('save', function(next) {
+MenuSchema.pre("save", function (next) {
   if (this.date) {
     this.date.setUTCHours(0, 0, 0, 0);
   }
   next();
 });
 
-const Menu = mongoose.model<IMenu>('Menu', MenuSchema);
+const Menu = mongoose.model<IMenu>("Menu", MenuSchema);
 export default Menu;

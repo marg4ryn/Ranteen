@@ -1,0 +1,74 @@
+
+services:
+  # MongoDB service
+  # mongodb:
+  #   image: mongo:latest
+  #   container_name: ranteen-mongodb
+  #   restart: unless-stopped
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: admin
+  #     MONGO_INITDB_ROOT_PASSWORD: password
+  #     MONGO_INITDB_DATABASE: ranteen
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #     - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+  #   networks:
+  #     - ranteen-network
+
+  # Backend service (development)
+  backend-dev:
+    build:      
+      context: .
+      target: development
+    container_name: ranteen-backend-dev
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      NODE_ENV: development
+      PORT: 5001
+      MONGODB_URI: mongodb+srv://gflopinski:tP4&0I2AnnIn0&@ranteen.gcddrgo.mongodb.net/?retryWrites=true&w=majority&appName=ranteen
+      SESSION_SECRET: your-session-secret-here
+      CLIENT_URL: http://localhost:3000
+      # Add your Google OAuth credentials here
+      # GOOGLE_CLIENT_ID: your-google-client-id
+      # GOOGLE_CLIENT_SECRET: your-google-client-secret
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - ranteen-network
+    profiles:
+      - dev
+
+  # Backend service (production)
+  backend:
+    build:
+      context: .
+      target: production
+    container_name: ranteen-backend
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      NODE_ENV: production
+      PORT: 5001
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/ranteen?authSource=admin
+      SESSION_SECRET: your-session-secret-here
+      CLIENT_URL: http://localhost:3000
+      # Add your Google OAuth credentials here
+      # GOOGLE_CLIENT_ID: your-google-client-id
+      # GOOGLE_CLIENT_SECRET: your-google-client-secret
+    networks:
+      - ranteen-network
+    profiles:
+      - prod
+
+networks:
+  ranteen-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
