@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthContext } from './contexts/AuthContext';
-import { MenuContext } from './contexts/MenuContext';
+import { MenuProvider } from './contexts/MenuContext';
+import authApi from './services/AuthApi';
 
 import Header from './components/Layout/Header';
 import Footer from './components/Layout/Footer';
@@ -16,22 +17,38 @@ import DishManagement from './components/Admin/DishManagement';
 import UserVerification from './components/Admin/UserVerification';
 import CommentModeration from './components/Admin/CommentModeration';
 
-import { mockMenus } from './data/mockMenus';
-
 import './App.css';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [menus, setMenus] = useState(mockMenus);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  useEffect(() => {
+    const checkCurrentUser = async () => {
+      const currentUser = await authApi.getMe();
+      setUser(currentUser);
+      setIsAuthLoading(false);
+    };
+
+    checkCurrentUser();
+  }, []); 
 
   const isAuthenticated = !!user;
   const isVerified = user && user.status === 'VERIFIED';
   const isAdmin = user && user.role === 'ADMINISTRATOR';
 
+  const handleLogout = async () => {
+    await authApi.logout();
+    setUser(null);
+  };
+
+    if (isAuthLoading) {
+    return <div>Ładowanie aplikacji...</div>;
+  }
+
   return (
-    <AuthContext.Provider value={{ user, setUser, isAuthenticated, isVerified, isAdmin }}>
-      <MenuContext.Provider value={{ menus, setMenus, selectedDate, setSelectedDate }}>
+    <AuthContext.Provider value={{ user, setUser, isAuthenticated, isVerified, isAdmin, logout: handleLogout }}>
+      <MenuProvider>
         <Router>
           <div className="app-container">
             <Header />
@@ -39,50 +56,51 @@ function App() {
               <Sidebar />
               <div className="content-area">
                 <Routes>
-                  {/* Public routes */}
-                  <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />} />
-                  <Route path="/admin/login" element={!isAdmin ? <AdminLogin /> : <Navigate to="/admin/menu" />} />
-                  
-                  {/* Routes for authenticated but not verified users */}
+                  {/* --- TRASY PUBLICZNE --- */}
+                  <Route path="/" element={<Calendar />} />
+                  <Route path="/day/:date" element={<DayView />} />
+
+                  {/* --- TRASY AUTENTYKACJI --- */}
+                  <Route 
+                    path="/login" 
+                    element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />} 
+                  />
+                  <Route 
+                    path="/admin/login" 
+                    element={!isAuthenticated ? <AdminLogin /> : <Navigate to="/admin/menu" />} 
+                  />
                   <Route 
                     path="/verification-pending" 
                     element={isAuthenticated && !isVerified ? <VerificationPending /> : <Navigate to="/" />} 
                   />
-                  
-                  {/* Routes for verified users */}
-                  <Route 
-                    path="/" 
-                    element={isAuthenticated ? (isVerified ? <Calendar /> : <Navigate to="/verification-pending" />) : <Navigate to="/login" />} 
-                  />
-                  <Route 
-                    path="/day/:date" 
-                    element={isAuthenticated ? (isVerified ? <DayView /> : <Navigate to="/verification-pending" />) : <Navigate to="/login" />} 
-                  />
-                  
-                  {/* Admin routes */}
+
+                  {/* --- TRASY CHRONIONE DLA ADMINA --- */}
                   <Route 
                     path="/admin/menu" 
-                    element={isAdmin ? <MenuManagement /> : <Navigate to="/admin/login" />} 
+                    element={<MenuManagement />} 
                   />
                   <Route 
                     path="/admin/dishes" 
-                    element={isAdmin ? <DishManagement /> : <Navigate to="/admin/login" />} 
+                    element={<DishManagement />} 
                   />
                   <Route 
                     path="/admin/users" 
-                    element={isAdmin ? <UserVerification /> : <Navigate to="/admin/login" />} 
+                    element={<UserVerification />} 
                   />
                   <Route 
                     path="/admin/comments" 
-                    element={isAdmin ? <CommentModeration /> : <Navigate to="/admin/login" />} 
+                    element={<CommentModeration />} 
                   />
+
+                  {/* Catch-all route dla nieistniejących stron */}
+                  <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
               </div>
             </div>
             <Footer />
           </div>
         </Router>
-      </MenuContext.Provider>
+      </MenuProvider>
     </AuthContext.Provider>
   );
 }

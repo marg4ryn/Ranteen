@@ -33,6 +33,5 @@ export const updateDishAverageRating = async (dishId: string | mongoose.Types.Ob
     // console.log(`Updated average rating for dish ${dishId}`);
   } catch (error) {
     console.error(`Error updating average rating for dish ${dishId}:`, error);
-    // Decide if this error should propagate or just be logged
   }
 };

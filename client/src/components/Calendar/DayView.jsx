@@ -1,32 +1,55 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { MenuContext } from '../../contexts/MenuContext';
+import { getMenuByDate } from '../../services/menuService'; // Poprawiony import
 import DishList from '../Dishes/DishList';
 import './DayView.css';
 
 const DayView = ({ compact = false }) => {
-  const { menus, selectedDate, setSelectedDate } = useContext(MenuContext);
+  const { selectedDate, setSelectedDate, setMenus } = useContext(MenuContext); // Dodano setMenus
   const { date: dateParam } = useParams();
   const [menu, setMenu] = useState(null);
-  
+  const [error, setError] = useState(null); // Dodano obsługę błędu
+
+  const formatDate = (date) => date.toISOString().split('T')[0]; // yyyy-mm-dd
+
   useEffect(() => {
-    // Jeśli data jest podana w URL, użyj jej
+    const fetchMenu = async (date) => {
+      try {
+        const dateString = formatDate(date);
+        const data = await getMenuByDate(dateString); // Poprawione wywołanie
+        const menusArray = data ? [data] : [];
+        setMenus(menusArray);
+
+        const foundMenu = menusArray.find(m => m.date === dateString);
+        setMenu(foundMenu);
+      } catch (err) {
+        const msg = err.message || 'Unknown error';
+        if (msg.includes('Not Found') || msg.includes('404')) {
+          setMenus([]);
+          setMenu(undefined);
+        } else {
+          setError(msg);
+          setMenus([]);
+          setMenu(undefined);
+        }
+      }
+    };
+
+    // Obsługa daty z URL
+    let effectiveDate = selectedDate;
     if (dateParam) {
       const [year, month, day] = dateParam.split('-').map(Number);
-      // Użyj funkcji porównującej daty zamiast bezpośrednio ustawiać stan
-      const newDate = new Date(year, month - 1, day);
-      if (selectedDate.toDateString() !== newDate.toDateString()) {
-        setSelectedDate(newDate);
+      const parsedDate = new Date(year, month - 1, day);
+
+      if (selectedDate.toDateString() !== parsedDate.toDateString()) {
+        setSelectedDate(parsedDate);
+        effectiveDate = parsedDate;
       }
     }
-    
-    // Format wybranej daty jako YYYY-MM-DD
-    const formattedDate = selectedDate.toISOString().split('T')[0];
-    
-    // Znajdź menu dla wybranej daty
-    const foundMenu = menus.find(m => m.date === formattedDate);
-    setMenu(foundMenu);
-  }, [dateParam, menus, selectedDate, setSelectedDate]);
+
+    fetchMenu(effectiveDate);
+  }, [dateParam]);
   
   // Format daty do wyświetlenia
   const formatDateForDisplay = (date) => {

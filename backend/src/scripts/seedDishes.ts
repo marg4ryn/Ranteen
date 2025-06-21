@@ -1,3 +1,11 @@
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import Dish from '../models/Dish';
+import connectDB from '../config/database';
+import { v4 as uuidv4 } from 'uuid';
+
+dotenv.config();
+
 export const mockDishes = [
   {
     id: '1',
@@ -136,3 +144,47 @@ export const mockDishes = [
     comments: []
   }
 ];
+
+export const seedDishes = async () => {
+  await connectDB();
+
+  try {
+    for (const dishData of mockDishes) {
+      const existing = await Dish.findOne({ name: dishData.name });
+
+      if (existing) {
+        console.log(`Danie "${dishData.name}" już istnieje, pomijam.`);
+        continue;
+      }
+
+      const dish = new Dish({
+        name: dishData.name,
+        description: dishData.description,
+        category: dishData.category,
+        imageUrl: dishData.imageUrl,
+        averageRating: dishData.averageRating,
+        isActive: true,
+        comments: dishData.comments.map(comment => ({
+          _id: comment.id || uuidv4(),
+          text: comment.text,
+          date: new Date(comment.date),
+          status: comment.status,
+          user: {
+            name: comment.user.name,
+            avatar: comment.user.avatar,
+          }
+        }))
+      });
+
+      await dish.save();
+      console.log(`Dodano danie: ${dish.name}`);
+    }
+  } catch (error) {
+    console.error('Błąd podczas dodawania dań:', error);
+  } finally {
+    await mongoose.disconnect();
+    console.log('Zamknięto połączenie z MongoDB.');
+  }
+};
+
+seedDishes();

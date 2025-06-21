@@ -60,7 +60,7 @@
 }
 
 .hamburger.open {
-  background-color: transparent;
+  background-color: black;
 }
 
 .hamburger.open::before {
@@ -92,6 +92,13 @@
 
 .nav-container.open {
   right: 0;
+}
+
+.main-nav {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  display: none;
 }
 
 .main-nav ul {

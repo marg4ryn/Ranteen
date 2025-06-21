@@ -34,13 +34,21 @@ const Sidebar = () => {
   };
   
   // Get upcoming menus (today and future)
-  const upcomingMenus = menus
-    .filter(menu => {
-      const menuDate = new Date(menu.date);
-      return menuDate >= new Date(today.setHours(0, 0, 0, 0));
-    })
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
-    .slice(0, 5); // Show only next 5 menus
+  const upcomingMenus = Array.isArray(menus)
+  ? menus
+      .filter(menu => {
+        if (!menu?.date) return false;
+
+        const menuDate = new Date(menu.date);
+        return !isNaN(menuDate.getTime()) && menuDate >= new Date(today.setHours(0, 0, 0, 0));
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateA.getTime() - dateB.getTime();
+      })
+      .slice(0, 5)
+  : [];
   
   // Format date for display
   const formatDateForDisplay = (dateString) => {

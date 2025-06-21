@@ -110,8 +110,6 @@ const router = express.Router();
 router.post("/", isAuthenticated, isAdmin, dishController.createDish);
 router.get(
   "/",
-  isAuthenticated,
-  isStudentApproved,
   dishController.getAllDishes
 );
 
@@ -222,8 +220,6 @@ router.get(
  */
 router.get(
   "/:dishId",
-  isAuthenticated,
-  isStudentApproved,
   dishController.getDishById
 );
 router.put("/:dishId", isAuthenticated, isAdmin, dishController.updateDish);

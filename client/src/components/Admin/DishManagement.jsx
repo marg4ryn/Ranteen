@@ -1,113 +1,128 @@
-import React, { useState, useEffect } from 'react';
-import { mockDishes as initialMockDishes } from '../../data/mockDishes'; // Assuming mockDishes path
+import React, { useState, useEffect, useCallback } from 'react';
+import dishApi from '../../services/dishService';
 import './DishManagement.css';
-
-// Helper to generate a somewhat unique ID
-const generateId = () => `dish-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 const DishManagement = () => {
   const [dishes, setDishes] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentDish, setCurrentDish] = useState(null); // Stores the dish being edited
-
+  
   const initialFormState = {
-    id: '',
+    _id: null,
     name: '',
     description: '',
-    category: 'Danie główne', // Default category
-    imageUrl: '',
-    // averageRating and comments are usually managed by other processes (e.g., user reviews)
-    // For simplicity, we won't manage them directly in this CRUD form.
+    category: 'main', // Zgodnie z API
+    allergens: [],
+    dietaryInfo: [],
+    // imageUrl: '' // Opcjonalne pole, jeśli API je obsługuje
   };
   const [formData, setFormData] = useState(initialFormState);
 
-  // Load initial dishes (e.g., from mock data or an API call in a real app)
-  useEffect(() => {
-    // Make a deep copy to avoid mutating the original mockDishes if it's used elsewhere
-    setDishes(JSON.parse(JSON.stringify(initialMockDishes)));
+  // Funkcja do pobierania dań z serwera
+  const fetchDishes = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await dishApi.getAll(); // Można dodać filtry, np. { limit: 100 }
+      setDishes(response.dishes.sort((a,b) => a.name.localeCompare(b.name)));
+    } catch (err) {
+      setError(`Nie udało się pobrać dań: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  // Pobierz dane przy pierwszym załadowaniu komponentu
+  useEffect(() => {
+    fetchDishes();
+  }, [fetchDishes]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    // Specjalna obsługa dla pól, które mają być tablicami stringów
+    if (name === 'allergens' || name === 'dietaryInfo') {
+      const arrayValue = value.split(',').map(item => item.trim()).filter(Boolean);
+      setFormData({ ...formData, [name]: arrayValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleAddNewDish = () => {
     setIsEditing(false);
-    setCurrentDish(null);
     setFormData(initialFormState);
     setShowForm(true);
   };
 
   const handleEditDish = (dish) => {
     setIsEditing(true);
-    setCurrentDish(dish);
     setFormData({
-      id: dish.id,
-      name: dish.name,
-      description: dish.description,
-      category: dish.category,
-      imageUrl: dish.imageUrl || '', // Handle cases where imageUrl might be undefined
+      ...dish,
+      // Konwertujemy tablice na stringi do edycji w polu tekstowym
+      allergens: dish.allergens ? dish.allergens.join(', ') : '',
+      dietaryInfo: dish.dietaryInfo ? dish.dietaryInfo.join(', ') : '',
     });
     setShowForm(true);
   };
 
-  const handleDeleteDish = (dishId) => {
+  const handleDeleteDish = async (dishId) => {
     if (window.confirm('Czy na pewno chcesz usunąć to danie?')) {
-      setDishes(dishes.filter(dish => dish.id !== dishId));
-      // If the deleted dish was being edited, close the form
-      if (currentDish && currentDish.id === dishId) {
-        setShowForm(false);
-        setCurrentDish(null);
-        setIsEditing(false);
+      try {
+        await dishApi.remove(dishId);
+        alert('Danie zostało usunięte!');
+        fetchDishes(); // Odśwież listę dań
+        if (formData._id === dishId) {
+            setShowForm(false); // Zamknij formularz, jeśli usunięto edytowane danie
+        }
+      } catch (err) {
+        alert(`Błąd podczas usuwania: ${err.message}`);
       }
-      alert('Danie zostało usunięte!');
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.category.trim()) {
       alert('Nazwa dania i kategoria są wymagane.');
       return;
     }
 
-    if (isEditing && currentDish) {
-      // Update existing dish
-      const updatedDishes = dishes.map(dish =>
-        dish.id === currentDish.id ? { ...dish, ...formData } : dish
-      );
-      setDishes(updatedDishes);
-      alert('Danie zostało zaktualizowane!');
-    } else {
-      // Add new dish
-      const newDish = {
-        ...formData,
-        id: generateId(),
-        // For new dishes, we might initialize averageRating and comments if needed
-        averageRating: 0,
-        comments: [],
-      };
-      setDishes([...dishes, newDish].sort((a,b) => a.name.localeCompare(b.name))); // Keep sorted
-      alert('Danie zostało dodane!');
+    // Przygotuj dane do wysłania (konwersja stringów z powrotem na tablice)
+    const dataToSend = {
+      ...formData,
+      allergens: typeof formData.allergens === 'string' ? formData.allergens.split(',').map(s => s.trim()).filter(Boolean) : formData.allergens,
+      dietaryInfo: typeof formData.dietaryInfo === 'string' ? formData.dietaryInfo.split(',').map(s => s.trim()).filter(Boolean) : formData.dietaryInfo,
     }
-    setShowForm(false);
-    setFormData(initialFormState);
-    setCurrentDish(null);
-    setIsEditing(false);
+
+    try {
+      if (isEditing) {
+        await dishApi.update(dataToSend._id, dataToSend);
+        alert('Danie zostało zaktualizowane!');
+      } else {
+        await dishApi.create(dataToSend);
+        alert('Danie zostało dodane!');
+      }
+      setShowForm(false);
+      fetchDishes(); // Odśwież listę dań po każdej udanej operacji
+    } catch (err) {
+      alert(`Błąd: ${err.message}`);
+    }
   };
 
   const handleCancel = () => {
     setShowForm(false);
     setFormData(initialFormState);
-    setCurrentDish(null);
     setIsEditing(false);
   };
 
-  // Available categories - you might want to fetch this from a config or derive it
-  const categories = ["Danie główne", "Zupa", "Przystawka", "Deser", "Napój"];
+  const categories = ["danie główne", "zupa", "deser", "wegetariańskie", "dodatek", "napój"];
+  const dietaryOptions = ["vegetarian", "vegan", "gluten-free", "dairy-free", "nut-free"];
 
+  if (isLoading) return <p>Ładowanie dań...</p>;
+  if (error) return <p className="error-message">{error}</p>;
 
   return (
     <div className="dish-management-container">

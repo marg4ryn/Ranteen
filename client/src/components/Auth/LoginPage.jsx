@@ -1,20 +1,13 @@
-import React, { useContext, useState } from 'react';
-import { AuthContext } from '../../contexts/AuthContext';
-import { mockUsers } from '../../data/mockUsers';
+import React, { useState } from 'react';
+import authApi from '../../services/AuthApi';
 import './LoginPage.css';
 
 const LoginPage = () => {
-  const { setUser } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGoogleLogin = () => {
     setIsLoading(true);
-    
-    setTimeout(() => {
-      const studentUser = mockUsers.find(user => user.role === 'STUDENT');
-      setUser(studentUser);
-      setIsLoading(false);
-    }, 1500);
+    authApi.loginWithGoogle();
   };
 
   return (
@@ -28,7 +21,7 @@ const LoginPage = () => {
           onClick={handleGoogleLogin}
           disabled={isLoading}
         >
-          {isLoading ? 'Logowanie...' : 'Zaloguj się przez Google'}
+          {isLoading ? 'Przekierowywanie...' : 'Zaloguj się przez Google'}
         </button>
         
         <div className="admin-login-link">

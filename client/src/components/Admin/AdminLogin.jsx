@@ -34,7 +34,6 @@ const AdminLogin = () => {
     <div className="admin-login-container">
       <div className="admin-login-card">
         <h2>Panel administratora</h2>
-        <p>Zaloguj się, aby zarządzać aplikacją</p>
         
         {error && <div className="error-message">{error}</div>}
         
@@ -73,7 +72,7 @@ const AdminLogin = () => {
         </form>
         
         <div className="back-to-main">
-          <a href="/">Powrót do strony głównej</a>
+          <a href="/login">Powrót</a>
         </div>
       </div>
     </div>

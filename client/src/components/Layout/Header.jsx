@@ -27,7 +27,7 @@ const Header = () => {
   return (
     <header className="app-header">
       <div className="logo">
-        <h1>Ranteen</h1>
+        <h1><Link to="/" onClick={closeMenu}>Ranteen</Link></h1>
       </div>
       
       <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle menu">
@@ -35,15 +35,36 @@ const Header = () => {
       </button>
       
       <div className={`nav-container ${menuOpen ? 'open' : ''}`}>
-        <nav className="main-nav">
-          {isAuthenticated && !isAdmin && (
+        <nav className="main-nav" style={{ display: menuOpen ? 'flex' : 'none' }}>
+          {!isAdmin && (
             <ul>
               <li>
-                <Link to="/" onClick={closeMenu}>Kalendarz</Link>
-              </li>
-              <li>
+                <Link to={`/`} onClick={closeMenu}>
+                  Kalendarz
+                </Link>
                 <Link to={`/day/${new Date().toISOString().split('T')[0]}`} onClick={closeMenu}>
                   Dzisiejsze danie
+                </Link>
+              </li>
+            </ul>
+          )}
+          {isAdmin && (
+            <ul>
+              <li>
+                <Link to={`/`} onClick={closeMenu}>
+                  Podgląd stołówki
+                </Link>
+                <Link to={`/admin/menu`} onClick={closeMenu}>
+                  Zarządzanie menu
+                </Link>
+                <Link to={`/admin/dishes`} onClick={closeMenu}>
+                  Zarządzanie daniami
+                </Link>
+                <Link to={`/admin/users`} onClick={closeMenu}>
+                  Weryfikacja użytkowników
+                </Link>
+                <Link to={`/admin/comments`} onClick={closeMenu}>
+                  Moderacja komentarzy
                 </Link>
               </li>
             </ul>
