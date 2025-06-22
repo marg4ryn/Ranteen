@@ -1,6 +1,6 @@
 import { Request, RequestHandler, Response } from "express";
 import { body, validationResult, param, query } from "express-validator";
-import { Types } from 'mongoose';
+import { Types } from "mongoose";
 import Menu, { IMenu } from "../models/Menu";
 import Dish from "../models/Dish";
 
@@ -73,10 +73,8 @@ export const createMenu: RequestHandler = async (
 
     const existingMenu = await Menu.findOne({ date: menuDate });
     if (existingMenu) {
-      res
-        .status(400)
-        .json({ message: "Menu for this date already exists." });
-        return;
+      res.status(400).json({ message: "Menu for this date already exists." });
+      return;
     }
 
     // Opcjonalnie: Sprawdź, czy wszystkie podane ID dań istnieją w bazie
@@ -94,7 +92,7 @@ export const createMenu: RequestHandler = async (
     await newMenu.save();
     // Zwróć menu z zapełnionymi danymi dań
     await newMenu.populate("dishes");
-    
+
     res.status(201).json(newMenu);
     return;
   } catch (error: any) {
@@ -102,7 +100,7 @@ export const createMenu: RequestHandler = async (
     res
       .status(500)
       .json({ message: "Server error creating menu.", error: error.message });
-      return;
+    return;
   }
 };
 
@@ -113,46 +111,46 @@ export const getAllMenus: RequestHandler = async (
   req: Request,
   res: Response
 ) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
-        return;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
+
+  const { startDate, endDate, upcoming } = req.query;
+
+  try {
+    const queryFilter: any = {};
+
+    if (upcoming) {
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0); // Początek dzisiejszego dnia w UTC
+      queryFilter.date = { $gte: today };
+    } else if (startDate || endDate) {
+      queryFilter.date = {};
+      if (startDate) {
+        queryFilter.date.$gte = new Date(startDate as string);
+      }
+      if (endDate) {
+        const end = new Date(endDate as string);
+        end.setUTCHours(23, 59, 59, 999); // Koniec dnia
+        queryFilter.date.$lte = end;
+      }
     }
 
-    const { startDate, endDate, upcoming } = req.query;
+    const menus = await Menu.find(queryFilter)
+      .populate("dishes") // Zastępuje ID dań pełnymi obiektami dań
+      .sort({ date: "asc" }); // Sortuj od najwcześniejszej daty
 
-    try {
-        const queryFilter: any = {};
-
-        if (upcoming) {
-            const today = new Date();
-            today.setUTCHours(0, 0, 0, 0); // Początek dzisiejszego dnia w UTC
-            queryFilter.date = { $gte: today };
-        } else if (startDate || endDate) {
-            queryFilter.date = {};
-            if (startDate) {
-                queryFilter.date.$gte = new Date(startDate as string);
-            }
-            if (endDate) {
-                const end = new Date(endDate as string);
-                end.setUTCHours(23, 59, 59, 999); // Koniec dnia
-                queryFilter.date.$lte = end;
-            }
-        }
-
-        const menus = await Menu.find(queryFilter)
-            .populate("dishes") // Zastępuje ID dań pełnymi obiektami dań
-            .sort({ date: "asc" }); // Sortuj od najwcześniejszej daty
-
-        res.json(menus);
-    } catch (error: any) {
-        console.error("Error fetching menus:", error);
-        res.status(500).json({
-            message: "Server error fetching menus.",
-            error: error.message,
-        });
-        return;
-    }
+    res.json(menus);
+  } catch (error: any) {
+    console.error("Error fetching menus:", error);
+    res.status(500).json({
+      message: "Server error fetching menus.",
+      error: error.message,
+    });
+    return;
+  }
 };
 
 /**
@@ -181,7 +179,7 @@ export const getMenuById: RequestHandler = async (
     res
       .status(500)
       .json({ message: "Server error fetching menu.", error: error.message });
-      return;
+    return;
   }
 };
 
@@ -191,7 +189,8 @@ export const getMenuById: RequestHandler = async (
 export const updateMenu = async (
   req: Request,
   res: Response
-): Promise<void> => { // Sygnatura jest teraz poprawna: zwracamy Promise<void>
+): Promise<void> => {
+  // Sygnatura jest teraz poprawna: zwracamy Promise<void>
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
@@ -238,9 +237,7 @@ export const updateMenu = async (
     if (dishes) {
       const dishesCount = await Dish.countDocuments({ _id: { $in: dishes } });
       if (dishesCount !== dishes.length) {
-        res
-          .status(400)
-          .json({ message: "One or more dish IDs are invalid." });
+        res.status(400).json({ message: "One or more dish IDs are invalid." });
         return; // FIX 1
       }
       updateData.dishes = dishes;
@@ -253,7 +250,6 @@ export const updateMenu = async (
     await updatedMenu.populate("dishes");
 
     res.json(updatedMenu);
-
   } catch (error: any) {
     console.error("Error updating menu:", error);
     if (error.kind === "ObjectId") {
@@ -300,13 +296,16 @@ export const deleteMenu: RequestHandler = async (
 /**
  * Pobiera menu dla konkretnej daty
  */
-export const getMenuByDate: RequestHandler = async (req: Request, res: Response) => {
+export const getMenuByDate: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const dateString = req.params.dateString;
     console.log("Received dateString:", dateString);
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      res.status(400).json({ message: 'Invalid date format. Use YYYY-MM-DD.' });
+      res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD." });
       return;
     }
 
@@ -322,18 +321,19 @@ export const getMenuByDate: RequestHandler = async (req: Request, res: Response)
       date: {
         $gte: startOfDay,
         $lte: endOfDay,
-      }
-    }).populate('dishes');
+      },
+    }).populate("dishes");
 
     if (!menu) {
-      res.status(404).json({ message: 'No menu found for this date.' });
+      res.status(200).json({ dishes: [] });
       return;
     }
 
     res.json(menu);
   } catch (error: any) {
     console.error("Error fetching menu by date:", error);
-    res.status(500).json({ message: "Server error fetching menu.", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Server error fetching menu.", error: error.message });
   }
 };
-
