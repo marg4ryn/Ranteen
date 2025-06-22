@@ -3,7 +3,6 @@ import DishCard from './DishCard';
 import './DishList.css';
 
 const DishList = ({ dishes, date, compact = false, isFuture = false }) => {
-  // Group dishes by category
   const groupedDishes = dishes.reduce((acc, dish) => {
     if (!acc[dish.category]) {
       acc[dish.category] = [];
@@ -18,15 +17,17 @@ const DishList = ({ dishes, date, compact = false, isFuture = false }) => {
         <div key={category} className="category-section">
           <h3 className="category-title">{category}</h3>
           <div className="category-dishes">
-            {categoryDishes.map(dish => (
-              <DishCard 
-                key={dish.id} 
-                dish={dish} 
-                date={date}
-                compact={compact}
-                isFuture={isFuture}
-              />
-            ))}
+            {categoryDishes.map((dish, index) => {
+              return (
+                <DishCard 
+                  key={dish.id || index}
+                  dish={dish} 
+                  date={date}
+                  compact={compact}
+                  isFuture={isFuture}
+                />
+              );
+            })}
           </div>
         </div>
       ))}

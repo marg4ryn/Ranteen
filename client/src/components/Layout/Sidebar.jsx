@@ -116,7 +116,7 @@ const Sidebar = () => {
               <ul className="sidebar-menu">
                 {upcomingMenus.map(menu => (
                   <li key={menu.date}>
-                    <a onClick={() => handleNavigation(`/day/${menu.date}`)}>
+                    <a onClick={() => handleNavigation(`/day/${new Date(menu.date).toISOString().split('T')[0]}`)}>
                       {formatDateForDisplay(menu.date)}
                       <span className="dish-count">
                         {menu.dishes.length} {menu.dishes.length === 1
