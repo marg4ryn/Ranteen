@@ -299,7 +299,7 @@ router.patch(
   authController.approveStudent
 );
 
-router.patch(
+router.delete(
   "/admin/students/:studentId/reject",
   isAuthenticated,
   isAdmin,

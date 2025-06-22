@@ -69,7 +69,7 @@ class AuthApi {
   async approveUser(userId) {
     try {
       const response = await fetch(`${this.baseUrl}/admin/students/${userId}/approve`, {
-        method: 'PUT',
+        method: 'PATCH',
       });
       return await response.json();
     } catch (error) {
