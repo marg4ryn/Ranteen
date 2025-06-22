@@ -41,7 +41,7 @@ class DishApi {
    */
   getAll(filters = {}) {
     // Domyślnie filtrujemy, aby pokazywać tylko aktywne dania, zgodnie z logiką kontrolera
-    const defaultFilters = { isActive: true };
+    const defaultFilters = { isActive: false };
     const allFilters = { ...defaultFilters, ...filters };
 
     const params = new URLSearchParams(allFilters);

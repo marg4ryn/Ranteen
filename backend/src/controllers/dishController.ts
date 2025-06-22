@@ -122,9 +122,9 @@ export const getAllDishes: RequestHandler = async (
     const dishes = await Dish.find(queryFilter)
       .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
       .skip((page - 1) * limit)
-      .limit(limit)
-      .populate("createdBy", "name email") // Populate creator info
-      .populate("updatedBy", "name email"); // Populate updater info
+      .limit(limit);
+    // .populate("createdBy", "name email") // Populate creator info
+    // .populate("updatedBy", "name email"); // Populate updater info
 
     res.json({
       dishes,
@@ -220,19 +220,25 @@ export const updateDish: RequestHandler = async (
   }
 };
 
-export const deleteDish: RequestHandler = async (req: Request, res: Response) => {
+export const deleteDish: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const deletedDish = await Dish.findByIdAndDelete(req.params.dishId);
 
     if (!deletedDish) {
-      res.status(404).json({ message: "Dish not found." });return;
+      res.status(404).json({ message: "Dish not found." });
+      return;
     }
 
-    res.json({ message: "Dish deleted successfully." });return;
+    res.json({ message: "Dish deleted successfully." });
+    return;
   } catch (error: any) {
     console.error("Error deleting dish:", error);
     if (error.kind === "ObjectId") {
-       res.status(400).json({ message: "Invalid dish ID format." });return;
+      res.status(400).json({ message: "Invalid dish ID format." });
+      return;
     }
 
     res.status(500).json({
@@ -241,4 +247,3 @@ export const deleteDish: RequestHandler = async (req: Request, res: Response) =>
     });
   }
 };
-
