@@ -59,7 +59,6 @@ const Calendar = () => {
   const handleDayClick = (day) => {
     const newDate = new Date(currentYear, currentMonth, day);
     setSelectedDate(newDate);
-    navigate(`/day/${toDateString(newDate)}`);
   };
   
   const prevMonth = () => {
@@ -122,9 +121,9 @@ const Calendar = () => {
   return (
     <div className="calendar-container">
       <div className="calendar-header">
-        <button onClick={prevMonth} disabled={isLoading}></button>
+        <button onClick={prevMonth} disabled={isLoading}>{"<"}</button>
         <h2>{monthNames[currentMonth]} {currentYear}</h2>
-        <button onClick={nextMonth} disabled={isLoading}></button>
+        <button onClick={nextMonth} disabled={isLoading}>{">"}</button>
       </div>
       
       <div className="calendar-days-header">
@@ -140,7 +139,7 @@ const Calendar = () => {
       
       <div className="today-menu">
         <h3>{isSelectedDateToday ? "Menu na dziś" : `Menu na ${selectedDate.toLocaleDateString()}`}</h3>
-        <DayView compact={true} />
+        <DayView compact={false} />
       </div>
     </div>
   );

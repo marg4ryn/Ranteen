@@ -11,11 +11,6 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
   
-  // If not authenticated, don't show sidebar
-  if (!isAuthenticated) {
-    return null;
-  }
-  
   // Toggle sidebar on mobile
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
@@ -71,89 +66,76 @@ const Sidebar = () => {
   };
   
   return (
-    <>
-      <button 
-        className={`sidebar-toggle ${isExpanded ? 'expanded' : ''}`}
-        onClick={toggleSidebar}
-        aria-label="Toggle sidebar"
-      >
-        <span className="toggle-icon"></span>
-        <span className="toggle-text">Menu</span>
-      </button>
-      
-      <div className={`sidebar ${isExpanded ? 'expanded' : ''}`}>
-        {isAdmin ? (
-          <div className="admin-sidebar">
-            <h3>Panel administratora</h3>
+  <>
+    <button 
+      className={`sidebar-toggle ${isExpanded ? 'expanded' : ''}`}
+      onClick={toggleSidebar}
+      aria-label="Toggle sidebar"
+    >
+      <span className="toggle-icon"></span>
+      <span className="toggle-text">Menu</span>
+    </button>
+
+    <div className={`sidebar ${isExpanded ? 'expanded' : ''}`}>          
+      {!isVerified && isAuthenticated && !isAdmin && (
+        <div className="verification-notice">
+          <h3>Weryfikacja konta</h3>
+          <p>Twoje konto oczekuje na weryfikację przez administratora.</p>
+          <p>Po weryfikacji uzyskasz dostęp do pełnej funkcjonalności aplikacji.</p>
+        </div>
+      )}
+
+      {isAdmin ? (
+        <div className="admin-sidebar">
+          <h3>Panel administratora</h3>
+          <ul className="sidebar-menu">
+            <li><a onClick={() => handleNavigation('/')}>Podgląd stołówki</a></li>
+            <li><a onClick={() => handleNavigation('/admin/menu')}>Zarządzanie menu</a></li>
+            <li><a onClick={() => handleNavigation('/admin/dishes')}>Zarządzanie daniami</a></li>
+            <li><a onClick={() => handleNavigation('/admin/users')}>Weryfikacja użytkowników</a></li>
+            <li><a onClick={() => handleNavigation('/admin/comments')}>Moderacja komentarzy</a></li>
+          </ul>
+        </div>
+      ) : (
+        <div className="student-sidebar">
+          <div className="quick-links">
+            <h3>Szybki dostęp</h3>
             <ul className="sidebar-menu">
+              <li><a onClick={() => handleNavigation('/')}>Kalendarz</a></li>
               <li>
-                <a onClick={() => handleNavigation('/')}>Podgląd stołówki</a>
-              </li>
-              <li>
-                <a onClick={() => handleNavigation('/admin/menu')}>Zarządzanie menu</a>
-              </li>
-              <li>
-                <a onClick={() => handleNavigation('/admin/dishes')}>Zarządzanie daniami</a>
-              </li>
-              <li>
-                <a onClick={() => handleNavigation('/admin/users')}>Weryfikacja użytkowników</a>
-              </li>
-              <li>
-                <a onClick={() => handleNavigation('/admin/comments')}>Moderacja komentarzy</a>
+                <a onClick={() => handleNavigation(`/day/${formatDate(new Date())}`)}>
+                  Dzisiejsze danie
+                </a>
               </li>
             </ul>
           </div>
-        ) : (
-          <div className="student-sidebar">
-            {isVerified ? (
-              <>
-                <div className="quick-links">
-                  <h3>Szybki dostęp</h3>
-                  <ul className="sidebar-menu">
-                    <li>
-                      <a onClick={() => handleNavigation('/')}>Kalendarz</a>
-                    </li>
-                    <li>
-                      <a onClick={() => handleNavigation(`/day/${formatDate(new Date())}`)}>
-                        Dzisiejsze danie
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-                
-                <div className="upcoming-menus">
-                  <h3>Nadchodzące menu</h3>
-                  {upcomingMenus.length > 0 ? (
-                    <ul className="sidebar-menu">
-                      {upcomingMenus.map(menu => (
-                        <li key={menu.id}>
-                          <a onClick={() => handleNavigation(`/day/${menu.date}`)}>
-                            {formatDateForDisplay(menu.date)}
-                            <span className="dish-count">
-                              {menu.dishes.length} {menu.dishes.length === 1 ? 'danie' : 
-                                (menu.dishes.length < 5 ? 'dania' : 'dań')}
-                            </span>
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="no-upcoming">Brak zaplanowanych menu.</p>
-                  )}
-                </div>
-              </>
+
+          <div className="upcoming-menus">
+            <h3>Nadchodzące menu</h3>
+            {upcomingMenus.length > 0 ? (
+              <ul className="sidebar-menu">
+                {upcomingMenus.map(menu => (
+                  <li key={menu.id}>
+                    <a onClick={() => handleNavigation(`/day/${menu.date}`)}>
+                      {formatDateForDisplay(menu.date)}
+                      <span className="dish-count">
+                        {menu.dishes.length} {menu.dishes.length === 1
+                          ? 'danie'
+                          : (menu.dishes.length < 5 ? 'dania' : 'dań')}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
             ) : (
-              <div className="verification-notice">
-                <h3>Weryfikacja konta</h3>
-                <p>Twoje konto oczekuje na weryfikację przez administratora.</p>
-                <p>Po weryfikacji uzyskasz dostęp do pełnej funkcjonalności aplikacji.</p>
-              </div>
+              <p className="no-upcoming">Brak zaplanowanych menu.</p>
             )}
           </div>
-        )}
-      </div>
-    </>
-  );
+        </div>
+      )}
+    </div>
+  </>
+);
 };
 
 export default Sidebar;

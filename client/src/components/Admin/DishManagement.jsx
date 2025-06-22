@@ -26,7 +26,7 @@ const DishManagement = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await dishApi.getAll(); // Można dodać filtry, np. { limit: 100 }
+      const response = await dishApi.getAll();
       setDishes(response.dishes.sort((a,b) => a.name.localeCompare(b.name)));
     } catch (err) {
       setError(`Nie udało się pobrać dań: ${err.message}`);

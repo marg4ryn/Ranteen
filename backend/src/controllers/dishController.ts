@@ -154,13 +154,6 @@ export const getDishById: RequestHandler = async (
       res.status(404).json({ message: "Dish not found." });
       return;
     }
-    // Students should only see active dishes unless it's part of a historical menu context
-    // For a direct GET /dishes/:id, this check is reasonable.
-    const user = req.user as IUser;
-    if (!dish.isActive && user.role !== "admin") {
-      res.status(404).json({ message: "Dish not found or is inactive." });
-      return;
-    }
 
     res.json(dish);
   } catch (error: any) {
@@ -212,12 +205,6 @@ export const updateDish: RequestHandler = async (
       description !== undefined ? description : dish.description;
     dish.category = category || dish.category;
     dish.imageUrl = imageUrl !== undefined ? imageUrl : dish.imageUrl;
-    dish.allergens = allergens !== undefined ? allergens : dish.allergens;
-    if (typeof isActive === "boolean") {
-      // Allow admin to change isActive status
-      dish.isActive = isActive;
-    }
-    dish.updatedBy = adminUser.id as any; // Mongoose handles Types.ObjectId conversion
 
     const updatedDish = await dish.save();
     res.json(updatedDish);
@@ -233,46 +220,25 @@ export const updateDish: RequestHandler = async (
   }
 };
 
-// Soft delete a dish (set isActive to false)
-export const deleteDish: RequestHandler = async (
-  req: Request,
-  res: Response
-) => {
-  const adminUser = req.user as IUser;
+export const deleteDish: RequestHandler = async (req: Request, res: Response) => {
   try {
-    const dish = await Dish.findById(req.params.dishId);
-    if (!dish) {
-      res.status(404).json({ message: "Dish not found." });
-      return;
+    const deletedDish = await Dish.findByIdAndDelete(req.params.dishId);
+
+    if (!deletedDish) {
+      res.status(404).json({ message: "Dish not found." });return;
     }
 
-    // Check if the dish is part of any *future* published menus.
-    // For simplicity, we will allow "deactivating" a dish.
-    // A more complex check could prevent deactivation if it's in upcoming *published* menus.
-    // const futureMenus = await Menu.find({
-    //     "items.dish": dish._id,
-    //     date: { $gte: new Date().setHours(0,0,0,0) }, // from today onwards
-    //     isPublished: true
-    // });
-
-    // if (futureMenus.length > 0 && dish.isActive) { // if trying to deactivate
-    //     return res.status(400).json({ message: 'Dish cannot be deactivated as it is part of future published menus. Unpublish or modify those menus first.' });
-    // }
-
-    dish.isActive = false; // Soft delete
-    dish.updatedBy = adminUser.id as any;
-    await dish.save();
-
-    res.json({ message: "Dish deactivated successfully (soft delete)." });
+    res.json({ message: "Dish deleted successfully." });return;
   } catch (error: any) {
-    console.error("Error deactivating dish:", error);
+    console.error("Error deleting dish:", error);
     if (error.kind === "ObjectId") {
-      res.status(400).json({ message: "Invalid dish ID format." });
-      return;
+       res.status(400).json({ message: "Invalid dish ID format." });return;
     }
+
     res.status(500).json({
-      message: "Server error deactivating dish.",
+      message: "Server error deleting dish.",
       error: error.message,
     });
   }
 };
+

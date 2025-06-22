@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthContext } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { MenuProvider } from './contexts/MenuContext';
 import authApi from './services/AuthApi';
 
@@ -27,10 +27,12 @@ function App() {
     const checkCurrentUser = async () => {
       const currentUser = await authApi.getMe();
       setUser(currentUser);
-      setIsAuthLoading(false);
     };
 
-    checkCurrentUser();
+    if (!(user === null)) {
+      checkCurrentUser();
+    }
+    setIsAuthLoading(false);
   }, []); 
 
   const isAuthenticated = !!user;
@@ -47,7 +49,7 @@ function App() {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, isAuthenticated, isVerified, isAdmin, logout: handleLogout }}>
+    <AuthProvider>
       <MenuProvider>
         <Router>
           <div className="app-container">
@@ -101,7 +103,7 @@ function App() {
           </div>
         </Router>
       </MenuProvider>
-    </AuthContext.Provider>
+     </AuthProvider>
   );
 }
 

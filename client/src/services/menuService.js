@@ -28,6 +28,14 @@ export const getMenuByDate = (dateString) => {
   return fetch(`${API_URL}/date/${dateString}`).then(handleResponse);
 };
 
+export const getAllMenus = () => {
+  return fetch(`${API_URL}/`)
+    .then(res => {
+      if (!res.ok) throw new Error('Network response was not ok');
+      return res.json();
+    });
+};
+
 /**
  * Pobiera menu w zadanym zakresie dat.
  * GET /api/menus?startDate=...&endDate=...

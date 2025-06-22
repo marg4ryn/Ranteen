@@ -48,22 +48,6 @@ export const createComment: RequestHandler = async (
   }
 
   try {
-    // Profanity check
-    // if (profanityFilter.isProfane(text)) {
-    //   // Reject outright
-    //   res.status(400).json({
-    //     message:
-    //       "Comment contains inappropriate language and cannot be submitted.",
-    //   });
-    //   return;
-    // }
-
-    const dish = await Dish.findById(dishId);
-    if (!dish || !dish.isActive) {
-      res.status(404).json({ message: "Dish not found or is inactive." });
-      return;
-    }
-
     const menu = await Menu.findOne({
       date: parsedMenuDate,
       "items.dish": dishId,

@@ -92,13 +92,6 @@ const router = express.Router();
  *       403:
  *         description: Student approval required
  */
-router.post("/", isAuthenticated, isAdmin, menuController.createDish);
-router.get(
-  "/",
-  isAuthenticated,
-  isStudentApproved,
-  menuController.getAllDishes
-);
 
 /**
  * @swagger
@@ -193,14 +186,6 @@ router.get(
  *       404:
  *         description: Menu not found
  */
-router.get(
-  "/:menuId",
-  isAuthenticated,
-  isStudentApproved,
-  menuController.getDishById
-);
-router.put("/:menuId", isAuthenticated, isAdmin, menuController.updateDish);
-router.delete("/:menuId", isAuthenticated, isAdmin, menuController.deleteDish);
 
 /**
  * @swagger
@@ -232,6 +217,51 @@ router.delete("/:menuId", isAuthenticated, isAdmin, menuController.deleteDish);
  *       404:
  *         description: No menu found for this date
  */
-// router.get('/date/:dateString', isAuthenticated, isStudentApproved, menuController.getMenuByDate);
+
+
+// POST /api/menus - Tworzenie nowego menu
+router.post(
+  "/",
+  isAuthenticated,
+  isAdmin,
+  menuController.createMenuValidationRules,
+  menuController.createMenu
+);
+
+// GET /api/menus - Pobieranie wszystkich menu
+router.get(
+  "/",
+  menuController.getAllMenusValidationRules, 
+  menuController.getAllMenus
+);
+
+// GET /api/menus/:menuId - Pobieranie menu po ID
+router.get(
+  "/:menuId",
+  menuController.getMenuById
+);
+
+// PUT /api/menus/:menuId - Aktualizacja menu
+router.put(
+  "/:menuId",
+  isAuthenticated,
+  isAdmin,
+  menuController.updateMenuValidationRules,
+  menuController.updateMenu
+);
+
+// DELETE /api/menus/:menuId - Usuwanie menu
+router.delete(
+  "/:menuId",
+  isAuthenticated,
+  isAdmin,
+  menuController.deleteMenu
+);
+
+// GET /api/menus/date/:dateString - Pobieranie menu po dacie
+router.get(
+  '/date/:dateString', 
+  menuController.getMenuByDate
+);
 
 export default router;

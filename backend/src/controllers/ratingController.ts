@@ -47,12 +47,6 @@ export const createOrUpdateRating: RequestHandler = async (
   }
 
   try {
-    const dish = await Dish.findById(dishId);
-    if (!dish || !dish.isActive) {
-      res.status(404).json({ message: "Dish not found or is inactive." });
-      return;
-    }
-
     const menu = await Menu.findOne({
       date: parsedMenuDate,
       "items.dish": dishId,

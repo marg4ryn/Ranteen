@@ -1,87 +1,60 @@
 import { Request, RequestHandler, Response } from "express";
-import { body, validationResult, query } from "express-validator";
-import Dish, { IDish, DishCategory } from "../models/Dish";
-import { IUser } from "../models/User"; // Assuming IUser is exported from User model
-import Menu from "../models/Menu";
+import { body, validationResult, param, query } from "express-validator";
+import { Types } from 'mongoose';
+import Menu, { IMenu } from "../models/Menu";
+import Dish from "../models/Dish";
 
-export const dishValidationRules = [
-  body("name").trim().notEmpty().withMessage("Dish name is required."),
-  body("category")
-    .isIn([
-      "danie główne",
-      "zupa",
-      "deser",
-      "wegetariańskie",
-      "dodatek",
-      "napój",
-    ])
-    .withMessage("Invalid dish category."),
-  body("description").optional().trim(),
-  body("imageUrl").optional().isURL().withMessage("Invalid image URL."),
-  body("allergens")
+// --- Walidacja ---
+
+export const createMenuValidationRules = [
+  body("date")
+    .isISO8601()
+    .toDate()
+    .withMessage("Date must be a valid date in YYYY-MM-DD format."),
+  body("dishes")
+    .isArray({ min: 1 })
+    .withMessage("Dishes must be an array with at least one dish ID."),
+  body("dishes.*")
+    .isMongoId()
+    .withMessage("Each item in dishes must be a valid Dish ID."),
+];
+
+export const updateMenuValidationRules = [
+  // W aktualizacji pola są opcjonalne
+  body("date")
+    .optional()
+    .isISO8601()
+    .toDate()
+    .withMessage("Date must be a valid date in YYYY-MM-DD format."),
+  body("dishes")
     .optional()
     .isArray()
-    .withMessage("Allergens must be an array of strings.")
-    .custom((allergens: any[]) =>
-      allergens.every((item) => typeof item === "string")
-    )
-    .withMessage("Each allergen must be a string."),
+    .withMessage("Dishes must be an array of dish IDs."),
+  body("dishes.*")
+    .isMongoId()
+    .withMessage("Each item in dishes must be a valid Dish ID."),
 ];
 
-export const createDish: RequestHandler = async (
-  req: Request,
-  res: Response
-) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(400).json({ errors: errors.array() });
-    return;
-  }
-
-  const { name, description, category, imageUrl, allergens } = req.body;
-  const adminUser = req.user as IUser;
-
-  try {
-    const existingDish = await Dish.findOne({ name });
-    if (existingDish) {
-      res.status(400).json({ message: "Dish with this name already exists." });
-      return;
-    }
-
-    const newDish: IDish = new Dish({
-      name,
-      description,
-      category,
-      imageUrl,
-      allergens: allergens || [],
-      createdBy: adminUser.id,
-      isActive: true, // default but explicit
-    });
-
-    await newDish.save();
-    res.status(201).json(newDish);
-  } catch (error: any) {
-    console.error("Error creating dish:", error);
-    res
-      .status(500)
-      .json({ message: "Server error creating dish.", error: error.message });
-  }
-};
-
-const getAllDishesValidationRules = [
-  query("page").optional().isInt({ min: 1 }).toInt(),
-  query("limit").optional().isInt({ min: 1, max: 100 }).toInt(),
-  query("category").optional().isString().trim(),
-  query("name").optional().isString().trim(),
-  query("isActive").optional().isBoolean().toBoolean(), // To filter by active status for admins
-  query("sortBy")
+export const getAllMenusValidationRules = [
+  query("startDate")
     .optional()
-    .isString()
-    .trim()
-    .isIn(["name", "category", "createdAt", "averageRating"]),
-  query("sortOrder").optional().isString().trim().isIn(["asc", "desc"]),
+    .isISO8601()
+    .toDate()
+    .withMessage("Invalid start date format."),
+  query("endDate")
+    .optional()
+    .isISO8601()
+    .toDate()
+    .withMessage("Invalid end date format."),
+  query("upcoming").optional().isBoolean().toBoolean(),
 ];
-export const getAllDishes: RequestHandler = async (
+
+// --- Kontrolery ---
+
+/**
+ * Tworzy nowe menu (tylko dla admina)
+ */
+export const createMenu: RequestHandler = async (
   req: Request,
   res: Response
 ) => {
@@ -91,187 +64,276 @@ export const getAllDishes: RequestHandler = async (
     return;
   }
 
-  const page = (req.query.page as unknown as number) || 1;
-  const limit = (req.query.limit as unknown as number) || 10;
-  const category = req.query.category as DishCategory | undefined;
-  const nameQuery = req.query.name as string | undefined;
-  const adminUser = req.user as IUser;
-  // Students should only see active dishes. Admins can see all if they want.
-  const isActiveQuery =
-    adminUser?.role === "admin" && req.query.isActive !== undefined
-      ? (req.query.isActive as unknown as boolean)
-      : true;
-
-  const sortBy = (req.query.sortBy as string) || "name";
-  const sortOrder = (req.query.sortOrder as "asc" | "desc") || "asc";
+  const { date, dishes } = req.body;
 
   try {
-    const queryFilter: any = {};
-    if (category) queryFilter.category = category;
-    if (nameQuery) queryFilter.name = { $regex: nameQuery, $options: "i" }; // Case-insensitive search
+    // Sprawdź, czy menu na ten dzień już istnieje, aby uniknąć duplikatów
+    const menuDate = new Date(date);
+    menuDate.setUTCHours(0, 0, 0, 0); // Normalizacja daty do północy UTC
 
-    // isActiveQuery can be true, false, or undefined. If undefined (default for students), filter for true.
-    if (typeof isActiveQuery === "boolean") {
-      queryFilter.isActive = isActiveQuery;
-    } else {
-      queryFilter.isActive = true; // Default for non-admin or if admin doesn't specify
+    const existingMenu = await Menu.findOne({ date: menuDate });
+    if (existingMenu) {
+      res
+        .status(400)
+        .json({ message: "Menu for this date already exists." });
+        return;
     }
 
-    const totalDishes = await Dish.countDocuments(queryFilter);
-    const dishes = await Dish.find(queryFilter)
-      .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate("createdBy", "name email") // Populate creator info
-      .populate("updatedBy", "name email"); // Populate updater info
+    // Opcjonalnie: Sprawdź, czy wszystkie podane ID dań istnieją w bazie
+    const dishesExist = await Dish.find({ _id: { $in: dishes } });
+    if (dishesExist.length !== dishes.length) {
+      res.status(400).json({ message: "One or more dish IDs are invalid." });
+      return;
+    }
 
-    res.json({
+    const newMenu: IMenu = new Menu({
+      date: menuDate,
       dishes,
-      currentPage: page,
-      totalPages: Math.ceil(totalDishes / limit),
-      totalDishes,
     });
+
+    await newMenu.save();
+    // Zwróć menu z zapełnionymi danymi dań
+    await newMenu.populate("dishes");
+    
+    res.status(201).json(newMenu);
+    return;
   } catch (error: any) {
-    console.error("Error fetching dishes:", error);
-    res.status(500).json({
-      message: "Server error fetching dishes.",
-      error: error.message,
-    });
+    console.error("Error creating menu:", error);
+    res
+      .status(500)
+      .json({ message: "Server error creating menu.", error: error.message });
+      return;
   }
 };
 
-export const getDishById: RequestHandler = async (
+/**
+ * Pobiera wszystkie menu z możliwością filtrowania
+ */
+export const getAllMenus: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+    }
+
+    const { startDate, endDate, upcoming } = req.query;
+
+    try {
+        const queryFilter: any = {};
+
+        if (upcoming) {
+            const today = new Date();
+            today.setUTCHours(0, 0, 0, 0); // Początek dzisiejszego dnia w UTC
+            queryFilter.date = { $gte: today };
+        } else if (startDate || endDate) {
+            queryFilter.date = {};
+            if (startDate) {
+                queryFilter.date.$gte = new Date(startDate as string);
+            }
+            if (endDate) {
+                const end = new Date(endDate as string);
+                end.setUTCHours(23, 59, 59, 999); // Koniec dnia
+                queryFilter.date.$lte = end;
+            }
+        }
+
+        const menus = await Menu.find(queryFilter)
+            .populate("dishes") // Zastępuje ID dań pełnymi obiektami dań
+            .sort({ date: "asc" }); // Sortuj od najwcześniejszej daty
+
+        res.json(menus);
+    } catch (error: any) {
+        console.error("Error fetching menus:", error);
+        res.status(500).json({
+            message: "Server error fetching menus.",
+            error: error.message,
+        });
+        return;
+    }
+};
+
+/**
+ * Pobiera konkretne menu po jego ID
+ */
+export const getMenuById: RequestHandler = async (
   req: Request,
   res: Response
 ) => {
   try {
-    const dish = await Dish.findById(req.params.dishId)
-      .populate("createdBy", "name email")
-      .populate("updatedBy", "name email");
+    const menu = await Menu.findById(req.params.menuId).populate("dishes");
 
-    if (!dish) {
-      res.status(404).json({ message: "Dish not found." });
-      return;
-    }
-    // Students should only see active dishes unless it's part of a historical menu context
-    // For a direct GET /dishes/:id, this check is reasonable.
-    const user = req.user as IUser;
-    if (!dish.isActive && user.role !== "admin") {
-      res.status(404).json({ message: "Dish not found or is inactive." });
+    if (!menu) {
+      res.status(404).json({ message: "Menu not found." });
       return;
     }
 
-    res.json(dish);
+    res.json(menu);
+    return;
   } catch (error: any) {
-    console.error("Error fetching dish by ID:", error);
+    console.error("Error fetching menu by ID:", error);
     if (error.kind === "ObjectId") {
-      res.status(400).json({ message: "Invalid dish ID format." });
+      res.status(400).json({ message: "Invalid menu ID format." });
       return;
     }
     res
       .status(500)
-      .json({ message: "Server error fetching dish.", error: error.message });
+      .json({ message: "Server error fetching menu.", error: error.message });
+      return;
   }
 };
 
-export const updateDish: RequestHandler = async (
+/**
+ * Aktualizuje istniejące menu (tylko dla admina)
+ */
+export const updateMenu = async (
   req: Request,
   res: Response
-) => {
+): Promise<void> => { // Sygnatura jest teraz poprawna: zwracamy Promise<void>
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
-    return;
+    return; // FIX 1: Zakończ wykonanie po wysłaniu odpowiedzi
   }
 
-  const { name, description, category, imageUrl, allergens, isActive } =
-    req.body;
-  const adminUser = req.user as IUser;
+  const { date, dishes } = req.body;
+  const { menuId } = req.params;
 
   try {
-    let dish = await Dish.findById(req.params.dishId);
-    if (!dish) {
-      res.status(404).json({ message: "Dish not found." });
-      return;
+    const menu = await Menu.findById(menuId);
+
+    if (!menu) {
+      res.status(404).json({ message: "Menu not found." });
+      return; // FIX 1: Zakończ wykonanie
     }
 
-    // Check if name is being changed and if the new name already exists for another dish
-    if (name && name !== dish.name) {
-      const existingDishWithNewName = await Dish.findOne({ name });
-      if (existingDishWithNewName) {
+    // Od tego momentu TypeScript wie, że `menu` nie jest `null`.
+
+    const updateData: {
+      date?: Date;
+      dishes?: Types.ObjectId[] | string[];
+    } = {};
+
+    // Walidacja i przygotowanie danych do aktualizacji
+    if (date) {
+      const newMenuDate = new Date(date);
+      newMenuDate.setUTCHours(0, 0, 0, 0);
+
+      const existingMenu = await Menu.findOne({
+        date: newMenuDate,
+        _id: { $ne: menu._id },
+      });
+
+      if (existingMenu) {
         res
           .status(400)
-          .json({ message: "Another dish with this name already exists." });
-        return;
+          .json({ message: "Another menu for this date already exists." });
+        return; // FIX 1
       }
+      updateData.date = newMenuDate;
     }
 
-    dish.name = name || dish.name;
-    dish.description =
-      description !== undefined ? description : dish.description;
-    dish.category = category || dish.category;
-    dish.imageUrl = imageUrl !== undefined ? imageUrl : dish.imageUrl;
-    dish.allergens = allergens !== undefined ? allergens : dish.allergens;
-    if (typeof isActive === "boolean") {
-      // Allow admin to change isActive status
-      dish.isActive = isActive;
+    if (dishes) {
+      const dishesCount = await Dish.countDocuments({ _id: { $in: dishes } });
+      if (dishesCount !== dishes.length) {
+        res
+          .status(400)
+          .json({ message: "One or more dish IDs are invalid." });
+        return; // FIX 1
+      }
+      updateData.dishes = dishes;
     }
-    dish.updatedBy = adminUser.id as any; // Mongoose handles Types.ObjectId conversion
 
-    const updatedDish = await dish.save();
-    res.json(updatedDish);
+    // FIX 2: Użyj metody .set() do aktualizacji - jest to idiomatyczne i type-safe
+    menu.set(updateData);
+
+    const updatedMenu = await menu.save();
+    await updatedMenu.populate("dishes");
+
+    res.json(updatedMenu);
+
   } catch (error: any) {
-    console.error("Error updating dish:", error);
+    console.error("Error updating menu:", error);
     if (error.kind === "ObjectId") {
-      res.status(400).json({ message: "Invalid dish ID format." });
-      return;
-    }
-    res
-      .status(500)
-      .json({ message: "Server error updating dish.", error: error.message });
-  }
-};
-
-// Soft delete a dish (set isActive to false)
-export const deleteDish: RequestHandler = async (
-  req: Request,
-  res: Response
-) => {
-  const adminUser = req.user as IUser;
-  try {
-    const dish = await Dish.findById(req.params.dishId);
-    if (!dish) {
-      res.status(404).json({ message: "Dish not found." });
-      return;
+      res.status(400).json({ message: "Invalid menu ID format." });
+      return; // FIX 1
     }
 
-    // Check if the dish is part of any *future* published menus.
-    // For simplicity, we will allow "deactivating" a dish.
-    // A more complex check could prevent deactivation if it's in upcoming *published* menus.
-    // const futureMenus = await Menu.find({
-    //     "items.dish": dish._id,
-    //     date: { $gte: new Date().setHours(0,0,0,0) }, // from today onwards
-    //     isPublished: true
-    // });
-
-    // if (futureMenus.length > 0 && dish.isActive) { // if trying to deactivate
-    //     return res.status(400).json({ message: 'Dish cannot be deactivated as it is part of future published menus. Unpublish or modify those menus first.' });
-    // }
-
-    dish.isActive = false; // Soft delete
-    dish.updatedBy = adminUser.id as any;
-    await dish.save();
-
-    res.json({ message: "Dish deactivated successfully (soft delete)." });
-  } catch (error: any) {
-    console.error("Error deactivating dish:", error);
-    if (error.kind === "ObjectId") {
-      res.status(400).json({ message: "Invalid dish ID format." });
-      return;
-    }
     res.status(500).json({
-      message: "Server error deactivating dish.",
+      message: "Server error updating menu.",
       error: error.message,
     });
   }
 };
+
+/**
+ * Usuwa menu (tylko dla admina)
+ */
+export const deleteMenu: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const menu = await Menu.findByIdAndDelete(req.params.menuId);
+
+    if (!menu) {
+      res.status(404).json({ message: "Menu not found." });
+      return;
+    }
+
+    res.json({ message: "Menu successfully deleted." });
+    return;
+  } catch (error: any) {
+    console.error("Error deleting menu:", error);
+    if (error.kind === "ObjectId") {
+      res.status(400).json({ message: "Invalid menu ID format." });
+      return;
+    }
+    res
+      .status(500)
+      .json({ message: "Server error deleting menu.", error: error.message });
+  }
+};
+
+/**
+ * Pobiera menu dla konkretnej daty
+ */
+export const getMenuByDate: RequestHandler = async (req: Request, res: Response) => {
+  try {
+    const dateString = req.params.dateString;
+    console.log("Received dateString:", dateString);
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      res.status(400).json({ message: 'Invalid date format. Use YYYY-MM-DD.' });
+      return;
+    }
+
+    // Zamieniamy dateString na Date i ustawiamy zakres od początku do końca dnia
+    const targetDate = new Date(dateString);
+    const startOfDay = new Date(targetDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(targetDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const menu = await Menu.findOne({
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      }
+    }).populate('dishes');
+
+    if (!menu) {
+      res.status(404).json({ message: 'No menu found for this date.' });
+      return;
+    }
+
+    res.json(menu);
+  } catch (error: any) {
+    console.error("Error fetching menu by date:", error);
+    res.status(500).json({ message: "Server error fetching menu.", error: error.message });
+  }
+};
+

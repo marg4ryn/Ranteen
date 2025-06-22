@@ -1,33 +1,33 @@
 import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import authApi from '../../services/AuthApi';
 import { AuthContext } from '../../contexts/AuthContext';
-import { mockUsers } from '../../data/mockUsers';
 import './AdminLogin.css';
 
 const AdminLogin = () => {
   const { setUser } = useContext(AuthContext);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
+    setError(null);
     setIsLoading(true);
     
-    setTimeout(() => {
-      const adminUser = mockUsers.find(
-        user => user.role === 'ADMINISTRATOR' && user.username === username
-      );
-      
-      if (adminUser && password === 'admin') {
-        setUser(adminUser);
-      } else {
-        setError('Nieprawidłowa nazwa użytkownika lub hasło');
-      }
-      
+    authApi.loginAdmin(email, password)
+    .then(user => {
+      setUser(user);
+       navigate(`/`);
+    })
+    .catch(err => {
+      setError(err.message);
+    })
+    .finally(() => {
       setIsLoading(false);
-    }, 1000);
+    });
   };
 
   return (
@@ -39,12 +39,12 @@ const AdminLogin = () => {
         
         <form onSubmit={handleSubmit} className="admin-login-form">
           <div className="form-group">
-            <label htmlFor="username">Nazwa użytkownika</label>
+            <label htmlFor="email">Email</label>
             <input
               type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isLoading}
             />

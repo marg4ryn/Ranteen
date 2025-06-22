@@ -22,8 +22,8 @@ const MenuManagement = () => {
   useEffect(() => {
     const fetchAllDishes = async () => {
       try {
-        const dishesFromApi = await dishApi.getAll();
-        setAllDishes(dishesFromApi || []);
+        const response = await dishApi.getAll({ limit: 100 }); 
+        setAllDishes(response.dishes || []);
       } catch (err) {
         setError(`Nie udało się pobrać listy dań: ${err.message}`);
       }
@@ -89,12 +89,15 @@ const MenuManagement = () => {
     }
     
     // Przygotowujemy dane do wysłania - potrzebujemy tylko ID dań
-    const dishIds = selectedDishes.map(dish => dish._id);
+    const dishIds = selectedDishes
+      .filter(dish => dish._id) // odfiltruj undefined
+      .map(dish => dish._id);
     const menuData = {
       date: selectedDate,
       dishes: dishIds,
     };
-
+    console.log('Wysyłam do API:', menuData); 
+    console.log('Stan selectedDishes:', selectedDishes);
     setIsLoading(true);
     try {
       if (selectedMenu) {
