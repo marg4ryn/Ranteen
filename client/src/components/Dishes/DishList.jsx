@@ -17,17 +17,15 @@ const DishList = ({ dishes, date, compact = false, isFuture = false }) => {
         <div key={category} className="category-section">
           <h3 className="category-title">{category}</h3>
           <div className="category-dishes">
-            {categoryDishes.map((dish, index) => {
-              return (
-                <DishCard 
-                  key={dish.id || index}
-                  dish={dish} 
-                  date={date}
-                  compact={compact}
-                  isFuture={isFuture}
-                />
-              );
-            })}
+            {categoryDishes.map(dish => (
+              <DishCard 
+                key={dish._id || index} 
+                dish={dish} 
+                date={date}
+                compact={compact}
+                isFuture={isFuture}
+              />
+            ))}
           </div>
         </div>
       ))}

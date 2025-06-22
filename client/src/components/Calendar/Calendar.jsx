@@ -13,6 +13,15 @@ const toDateString = (date) => {
   return `${year}-${month}-${day}`;
 };
 
+// Funkcja pomocnicza do formatowania obiektu Date na string 'YYYY-MM-DD' w lokalnym czasie
+const toLocalDateString = (date) => {
+  if (!date) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const Calendar = ({ showDayView = true }) => {
   const { menus, setMenus, selectedDate, setSelectedDate } = useContext(MenuContext);
   const navigate = useNavigate();
@@ -108,8 +117,8 @@ const Calendar = ({ showDayView = true }) => {
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentYear, currentMonth, day);
       const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
-      const isToday = toDateString(date) === toDateString(new Date());
-      const isSelected = toDateString(date) === toDateString(selectedDate);
+      const isToday = toLocalDateString(date) === toLocalDateString(new Date());
+      const isSelected = toLocalDateString(date) === toLocalDateString(selectedDate);
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
       const hasMenuForDay = hasMenu(day);
       
@@ -127,7 +136,7 @@ const Calendar = ({ showDayView = true }) => {
     return calendarDays;
   }
   
-  const isSelectedDateToday = toDateString(selectedDate) === toDateString(new Date());
+  const isSelectedDateToday = toLocalDateString(selectedDate) === toLocalDateString(new Date());
   
   return (
     <div className="calendar-container">

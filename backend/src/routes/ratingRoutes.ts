@@ -68,6 +68,7 @@ router.post(
   isAuthenticated,
   isStudent,
   isStudentApproved,
+  ratingController.ratingValidationRules,
   ratingController.createOrUpdateRating
 );
 

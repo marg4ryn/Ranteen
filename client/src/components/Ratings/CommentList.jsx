@@ -24,18 +24,27 @@ const CommentList = ({ comments }) => {
       ) : (
         <ul>
           {comments.map(comment => (
-            <li key={comment.id} className={`comment ${comment.status.toLowerCase()}`}>
+            <li key={comment._id} className={`comment ${comment.status.toLowerCase()}`}>
               <div className="comment-header">
                 <div className="comment-author">
                   <img 
-                    src={comment.user.avatar || 'https://via.placeholder.com/40'} 
-                    alt={comment.user.name} 
+                    src={comment.student?.profilePictureUrl || 'https://via.placeholder.com/40'} 
+                    alt={comment.student?.name || 'Użytkownik'} 
                     className="author-avatar" 
                   />
-                  <span className="author-name">{comment.user.name}</span>
+                  <span className="author-name">{comment.student?.name || 'Anonimowy użytkownik'}</span>
                 </div>
                 <div className="comment-meta">
-                  <span className="comment-date">{formatDate(comment.date)}</span>
+                  <span className="comment-date">{formatDate(comment.createdAt)}</span>
+                  {comment.status === 'pending' && (
+                    <span className="status-badge pending">Oczekuje moderacji</span>
+                  )}
+                  {comment.status === 'approved' && (
+                    <span className="status-badge approved">Zatwierdzony</span>
+                  )}
+                  {comment.status === 'rejected' && (
+                    <span className="status-badge rejected">Odrzucony</span>
+                  )}
                 </div>
               </div>
               <div className="comment-body">

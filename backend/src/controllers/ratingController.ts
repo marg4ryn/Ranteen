@@ -49,23 +49,23 @@ export const createOrUpdateRating: RequestHandler = async (
   try {
     const menu = await Menu.findOne({
       date: parsedMenuDate,
-      "items.dish": dishId,
-      isPublished: true,
+      dishes: dishId,
     });
+
     if (!menu) {
       res.status(404).json({
-        message: `Dish not found on the published menu for ${
+        message: `Dish not found on the menu for ${
           parsedMenuDate.toISOString().split("T")[0]
         }.`,
       });
       return;
     }
 
-    // Check if student has already rated this dish on this menu
+    // Check if student has already rated this dish on this date
     let existingRating = await Rating.findOne({
       student: student.id,
       dish: dishId,
-      menu: menu._id,
+      date: parsedMenuDate,
     });
 
     if (existingRating) {
@@ -83,8 +83,7 @@ export const createOrUpdateRating: RequestHandler = async (
       const newRating = new Rating({
         student: student.id,
         dish: dishId,
-        menu: menu._id,
-        menuDate: parsedMenuDate, // Use the parsed and standardized date
+        date: parsedMenuDate, // Use the parsed and standardized date
         rating,
       });
       await newRating.save();
@@ -111,7 +110,7 @@ export const createOrUpdateRating: RequestHandler = async (
   }
 };
 
-const getMyRatingForDishValidationRulels = [
+const getMyRatingForDishValidationRules = [
   param("dishId").isMongoId().withMessage("Valid Dish ID is required."),
   param("menuDateString")
     .isISO8601()
@@ -140,7 +139,7 @@ export const getMyRatingForDishOnMenu: RequestHandler = async (
   try {
     const menu = await Menu.findOne({
       date: parsedMenuDate,
-      "items.dish": dishId,
+      dishes: dishId, // Changed from "items.dish" to "dishes"
     });
     if (!menu) {
       res
@@ -152,7 +151,7 @@ export const getMyRatingForDishOnMenu: RequestHandler = async (
     const rating = await Rating.findOne({
       student: student.id,
       dish: dishId,
-      menu: menu._id,
+      date: parsedMenuDate,
     });
 
     if (!rating) {

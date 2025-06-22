@@ -6,18 +6,19 @@ const CommentForm = ({ onSubmit, onCancel }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Handle form submit
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (comment.trim()) {
       setIsSubmitting(true);
-      
-      // Simulate API call
-      setTimeout(() => {
-        onSubmit(comment);
+      try {
+        await onSubmit(comment.trim());
         setComment('');
+      } catch (error) {
+        console.error('Error submitting comment:', error);
+      } finally {
         setIsSubmitting(false);
-      }, 1000);
+      }
     }
   };
   
@@ -30,8 +31,9 @@ const CommentForm = ({ onSubmit, onCancel }) => {
           onChange={(e) => setComment(e.target.value)}
           placeholder="Co sądzisz o tym daniu?"
           rows={3}
-          required
           disabled={isSubmitting}
+          minLength={3}
+          maxLength={500}
         />
         <div className="form-actions">
           <button 
@@ -44,7 +46,7 @@ const CommentForm = ({ onSubmit, onCancel }) => {
           </button>
           <button 
             type="submit"
-            disabled={isSubmitting || !comment.trim()}
+            disabled={isSubmitting || !comment.trim() || comment.trim().length < 3}
             className="submit-btn"
           >
             {isSubmitting ? 'Wysyłanie...' : 'Wyślij komentarz'}

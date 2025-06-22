@@ -7,13 +7,31 @@
     font-size: 24px;
     color: #ddd;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: color 0.2s ease;
+    user-select: none;
+    margin-right: 2px;
+  }
+  
+  .star:hover {
+    color: #ffb300;
   }
   
   .star.filled {
     color: #ffc107;
   }
   
+  .star.filled:hover {
+    color: #ff8f00;
+  }
+  
   .star.readonly {
     cursor: default;
+  }
+  
+  .star.readonly:hover {
+    color: #ddd;
+  }
+  
+  .star.readonly.filled:hover {
+    color: #ffc107;
   }

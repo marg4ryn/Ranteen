@@ -48,8 +48,6 @@ export const createDish: RequestHandler = async (
       description,
       category,
       imageUrl,
-      allergens: allergens || [],
-      createdBy: adminUser.id,
     });
 
     await newDish.save();
@@ -141,9 +139,7 @@ export const getDishById: RequestHandler = async (
       return;
     }
 
-    const dish = await Dish.findById(dishId)
-      .populate("createdBy", "name email")
-      .populate("updatedBy", "name email");
+    const dish = await Dish.findById(dishId);
 
     if (!dish) {
       res.status(404).json({ message: "Dish not found." });

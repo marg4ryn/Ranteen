@@ -50,12 +50,11 @@ export const createComment: RequestHandler = async (
   try {
     const menu = await Menu.findOne({
       date: parsedMenuDate,
-      "items.dish": dishId,
-      isPublished: true,
+      dishes: dishId, // Changed from "items.dish" to "dishes"
     });
     if (!menu) {
       res.status(404).json({
-        message: `Dish not found on the published menu for ${
+        message: `Dish not found on the menu for ${
           parsedMenuDate.toISOString().split("T")[0]
         }.`,
       });
@@ -66,7 +65,7 @@ export const createComment: RequestHandler = async (
     const existingComment = await Comment.findOne({
       student: student.id,
       dish: dishId,
-      menu: menu._id,
+      date: parsedMenuDate,
     });
     if (existingComment) {
       res.status(409).json({
@@ -79,8 +78,7 @@ export const createComment: RequestHandler = async (
     const newComment = new Comment({
       student: student.id,
       dish: dishId,
-      menu: menu._id,
-      menuDate: parsedMenuDate,
+      date: parsedMenuDate,
       text,
       status: "pending", // Default status, admin needs to approve
     });
@@ -130,7 +128,7 @@ export const getMyComments: RequestHandler = async (
     const totalComments = await Comment.countDocuments(queryFilter);
     const comments = await Comment.find(queryFilter)
       .populate("dish", "name imageUrl")
-      .populate("menu", "date")
+      .populate("student", "name profilePictureUrl")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -298,7 +296,7 @@ export const getApprovedCommentsForDish: RequestHandler = async (
     const queryFilter: any = { dish: dishId, status: "approved" };
     if (menuDateString) {
       const parsedMenuDate = parseDateToUTC(menuDateString);
-      if (parsedMenuDate) queryFilter.menuDate = parsedMenuDate;
+      if (parsedMenuDate) queryFilter.date = parsedMenuDate;
       else {
         res.status(400).json({ message: "Invalid menu date format." });
         return;
