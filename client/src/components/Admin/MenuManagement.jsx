@@ -5,8 +5,13 @@ import Calendar from '../Calendar/Calendar';
 import { MenuContext } from '../../contexts/MenuContext';
 import './MenuManagement.css';
 
-// Helper do formatowania daty
-const toDateString = (date) => new Date(date).toISOString().split('T')[0];
+const toDateString = (date) => {
+  if (!date) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // miesiące liczone od 0
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const MenuManagement = () => {
   // --- Stany komponentu ---
