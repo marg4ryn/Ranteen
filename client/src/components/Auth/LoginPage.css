@@ -26,10 +26,22 @@
     align-items: center;
     justify-content: center;
     width: 100%;
+    gap: 8px;
   }
   
   .google-login-button:hover {
     background-color: #357ae8;
+  }
+  
+  .google-logo-container {
+    background-color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
   }
   
   .admin-login-link {
