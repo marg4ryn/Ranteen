@@ -232,6 +232,28 @@ export const approveStudent = async (req: Request, res: Response) => {
   }
 };
 
+// Admin: Reject (and delete) a student
+export const rejectStudent = async (req: Request, res: Response) => {
+  try {
+    const studentId = req.params.studentId;
+
+    const student = await User.findOneAndDelete({ 
+      _id: studentId, 
+      role: 'student', 
+      isApproved: false 
+    });
+
+    if (!student) {
+      return res.status(404).json({ message: "Pending student not found." });
+    }
+
+    res.json({ message: `Student ${student.name} rejected and removed successfully.` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error rejecting student." });
+  }
+};
+
 // Password recovery functionality (basic implementation)
 // For a full implementation, you'd generate a token, store it with expiry, and send an email.
 export const requestPasswordResetAdmin = async (
