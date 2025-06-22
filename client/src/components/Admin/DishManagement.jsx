@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import dishApi from '../../services/dishService';
+import FileUpload from '../FileUpload/FileUpload';
 import './DishManagement.css';
 
 const DishManagement = () => {
@@ -9,15 +10,16 @@ const DishManagement = () => {
   
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
   
   const initialFormState = {
     _id: null,
     name: '',
     description: '',
-    category: 'main', // Zgodnie z API
+    category: 'danie główne', // Zgodnie z API
     allergens: [],
     dietaryInfo: [],
-    // imageUrl: '' // Opcjonalne pole, jeśli API je obsługuje
+    imageUrl: '' // Keep for existing images
   };
   const [formData, setFormData] = useState(initialFormState);
 
@@ -54,6 +56,7 @@ const DishManagement = () => {
   const handleAddNewDish = () => {
     setIsEditing(false);
     setFormData(initialFormState);
+    setSelectedImageFile(null);
     setShowForm(true);
   };
 
@@ -65,6 +68,7 @@ const DishManagement = () => {
       allergens: dish.allergens ? dish.allergens.join(', ') : '',
       dietaryInfo: dish.dietaryInfo ? dish.dietaryInfo.join(', ') : '',
     });
+    setSelectedImageFile(null); // Reset selected file for editing
     setShowForm(true);
   };
 
@@ -99,13 +103,14 @@ const DishManagement = () => {
 
     try {
       if (isEditing) {
-        await dishApi.update(dataToSend._id, dataToSend);
+        await dishApi.updateWithImage(dataToSend._id, dataToSend, selectedImageFile);
         alert('Danie zostało zaktualizowane!');
       } else {
-        await dishApi.create(dataToSend);
+        await dishApi.createWithImage(dataToSend, selectedImageFile);
         alert('Danie zostało dodane!');
       }
       setShowForm(false);
+      setSelectedImageFile(null);
       fetchDishes(); // Odśwież listę dań po każdej udanej operacji
     } catch (err) {
       alert(`Błąd: ${err.message}`);
@@ -115,7 +120,12 @@ const DishManagement = () => {
   const handleCancel = () => {
     setShowForm(false);
     setFormData(initialFormState);
+    setSelectedImageFile(null);
     setIsEditing(false);
+  };
+
+  const handleFileSelect = (file) => {
+    setSelectedImageFile(file);
   };
 
   const categories = ["danie główne", "zupa", "deser", "wegetariańskie", "dodatek", "napój"];
@@ -172,14 +182,20 @@ const DishManagement = () => {
               </select>
             </div>
             <div className="form-group">
-              <label htmlFor="imageUrl">URL obrazka:</label>
-              <input
-                type="url"
-                id="imageUrl"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleInputChange}
+              <label htmlFor="dishImage">Zdjęcie dania:</label>
+              <FileUpload
+                onFileSelect={handleFileSelect}
+                accept="image/*"
+                maxSize={5 * 1024 * 1024} // 5MB
+                label="Wybierz zdjęcie dania"
+                showPreview={true}
+                currentFile={formData.imageUrl}
               />
+              {formData.imageUrl && !selectedImageFile && (
+                <div className="current-image-info">
+                  <small>Obecne zdjęcie: {formData.imageUrl.split('/').pop()}</small>
+                </div>
+              )}
             </div>
             <div className="form-actions">
               <button type="submit" className="save-dish-changes-btn">
@@ -200,7 +216,7 @@ const DishManagement = () => {
         ) : (
           <ul className="dish-list">
             {dishes.map(dish => (
-              <li key={dish.id} className="dish-item-manage">
+              <li key={dish._id} className="dish-item-manage" >
                 <div className="dish-item-details">
                   <span className="dish-name">{dish.name}</span>
                   <span className="dish-category">Kategoria: {dish.category}</span>
@@ -214,7 +230,7 @@ const DishManagement = () => {
                   <button onClick={() => handleEditDish(dish)} className="edit-dish-btn">
                     Edytuj
                   </button>
-                  <button onClick={() => handleDeleteDish(dish.id)} className="delete-dish-btn">
+                  <button onClick={() => handleDeleteDish(dish._id)} className="delete-dish-btn">
                     Usuń
                   </button>
                 </div>

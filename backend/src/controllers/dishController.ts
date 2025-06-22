@@ -7,17 +7,12 @@ import Menu from "../models/Menu";
 export const dishValidationRules = [
   body("name").trim().notEmpty().withMessage("Dish name is required."),
   body("category")
-    .isIn([
-      "danie główne",
-      "zupa",
-      "deser",
-      "wegetariańskie",
-      "dodatek",
-      "napój",
-    ])
-    .withMessage("Invalid dish category."),
+    .isIn(["danie główne", "zupa", "deser", "wegetariańskie", "dodatek", "napój"])
+    .withMessage(
+      "Invalid dish category. Valid categories are: danie główne, zupa, deser, wegetariańskie, dodatek, napój"
+    ),
   body("description").optional().trim(),
-  body("imageUrl").optional().isURL().withMessage("Invalid image URL."),
+  body("imageUrl").optional().isString().withMessage("Image URL must be a string."),
   body("allergens")
     .optional()
     .isArray()
@@ -55,7 +50,6 @@ export const createDish: RequestHandler = async (
       imageUrl,
       allergens: allergens || [],
       createdBy: adminUser.id,
-      isActive: true, // default but explicit
     });
 
     await newDish.save();
@@ -73,7 +67,6 @@ const getAllDishesValidationRules = [
   query("limit").optional().isInt({ min: 1, max: 100 }).toInt(),
   query("category").optional().isString().trim(),
   query("name").optional().isString().trim(),
-  query("isActive").optional().isBoolean().toBoolean(), // To filter by active status for admins
   query("sortBy")
     .optional()
     .isString()
@@ -97,11 +90,6 @@ export const getAllDishes: RequestHandler = async (
   const category = req.query.category as DishCategory | undefined;
   const nameQuery = req.query.name as string | undefined;
   const adminUser = req.user as IUser;
-  // Students should only see active dishes. Admins can see all if they want.
-  const isActiveQuery =
-    adminUser?.role === "admin" && req.query.isActive !== undefined
-      ? (req.query.isActive as unknown as boolean)
-      : true;
 
   const sortBy = (req.query.sortBy as string) || "name";
   const sortOrder = (req.query.sortOrder as "asc" | "desc") || "asc";
@@ -110,13 +98,6 @@ export const getAllDishes: RequestHandler = async (
     const queryFilter: any = {};
     if (category) queryFilter.category = category;
     if (nameQuery) queryFilter.name = { $regex: nameQuery, $options: "i" }; // Case-insensitive search
-
-    // isActiveQuery can be true, false, or undefined. If undefined (default for students), filter for true.
-    if (typeof isActiveQuery === "boolean") {
-      queryFilter.isActive = isActiveQuery;
-    } else {
-      queryFilter.isActive = true; // Default for non-admin or if admin doesn't specify
-    }
 
     const totalDishes = await Dish.countDocuments(queryFilter);
     const dishes = await Dish.find(queryFilter)
@@ -146,7 +127,21 @@ export const getDishById: RequestHandler = async (
   res: Response
 ) => {
   try {
-    const dish = await Dish.findById(req.params.dishId)
+    const { dishId } = req.params;
+
+    // Validate that dishId is provided and not undefined
+    if (!dishId || dishId === "undefined") {
+      res.status(400).json({ message: "Dish ID is required." });
+      return;
+    }
+
+    // Validate ObjectId format
+    if (!dishId.match(/^[0-9a-fA-F]{24}$/)) {
+      res.status(400).json({ message: "Invalid dish ID format." });
+      return;
+    }
+
+    const dish = await Dish.findById(dishId)
       .populate("createdBy", "name email")
       .populate("updatedBy", "name email");
 
@@ -178,12 +173,25 @@ export const updateDish: RequestHandler = async (
     return;
   }
 
-  const { name, description, category, imageUrl, allergens, isActive } =
-    req.body;
+  const { name, description, category, imageUrl, allergens } = req.body;
   const adminUser = req.user as IUser;
 
   try {
-    let dish = await Dish.findById(req.params.dishId);
+    const { dishId } = req.params;
+
+    // Validate that dishId is provided and not undefined
+    if (!dishId || dishId === "undefined") {
+      res.status(400).json({ message: "Dish ID is required." });
+      return;
+    }
+
+    // Validate ObjectId format
+    if (!dishId.match(/^[0-9a-fA-F]{24}$/)) {
+      res.status(400).json({ message: "Invalid dish ID format." });
+      return;
+    }
+
+    let dish = await Dish.findById(dishId);
     if (!dish) {
       res.status(404).json({ message: "Dish not found." });
       return;
@@ -225,7 +233,21 @@ export const deleteDish: RequestHandler = async (
   res: Response
 ) => {
   try {
-    const deletedDish = await Dish.findByIdAndDelete(req.params.dishId);
+    const { dishId } = req.params;
+
+    // Validate that dishId is provided and not undefined
+    if (!dishId || dishId === "undefined") {
+      res.status(400).json({ message: "Dish ID is required." });
+      return;
+    }
+
+    // Validate ObjectId format
+    if (!dishId.match(/^[0-9a-fA-F]{24}$/)) {
+      res.status(400).json({ message: "Invalid dish ID format." });
+      return;
+    }
+
+    const deletedDish = await Dish.findByIdAndDelete(dishId);
 
     if (!deletedDish) {
       res.status(404).json({ message: "Dish not found." });

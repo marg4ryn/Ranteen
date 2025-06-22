@@ -42,7 +42,7 @@ const router = express.Router();
  *                 description: Dish description
  *               category:
  *                 type: string
- *                 enum: [starter, main, dessert, drink]
+ *                 enum: [danie główne, zupa, deser, wegetariańskie, dodatek, napój]
  *                 description: Dish category
  *               allergens:
  *                 type: array
@@ -78,7 +78,7 @@ const router = express.Router();
  *         name: category
  *         schema:
  *           type: string
- *           enum: [starter, main, dessert, drink]
+ *           enum: [danie główne, zupa, deser, wegetariańskie, dodatek, napój]
  *         description: Filter dishes by category
  *       - in: query
  *         name: dietary
@@ -108,10 +108,7 @@ const router = express.Router();
  *         description: Student approval required
  */
 router.post("/", isAuthenticated, isAdmin, dishController.createDish);
-router.get(
-  "/",
-  dishController.getAllDishes
-);
+router.get("/", dishController.getAllDishes);
 
 /**
  * @swagger
@@ -168,7 +165,7 @@ router.get(
  *                 description: Dish description
  *               category:
  *                 type: string
- *                 enum: [starter, main, dessert, drink]
+ *                 enum: [danie główne, zupa, deser, wegetariańskie, dodatek, napój]
  *                 description: Dish category
  *               allergens:
  *                 type: array
@@ -218,10 +215,7 @@ router.get(
  *       404:
  *         description: Dish not found
  */
-router.get(
-  "/:dishId",
-  dishController.getDishById
-);
+router.get("/:dishId", dishController.getDishById);
 router.put("/:dishId", isAuthenticated, isAdmin, dishController.updateDish);
 router.delete("/:dishId", isAuthenticated, isAdmin, dishController.deleteDish);
 

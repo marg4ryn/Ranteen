@@ -15,6 +15,7 @@ import dishRoutes from "./routes/dishRoutes";
 import menuRoutes from "./routes/menuRoutes";
 import ratingRoutes from "./routes/ratingRoutes";
 import commentRoutes from "./routes/commentRoutes";
+import uploadRoutes from "./routes/uploadRoutes";
 
 dotenv.config();
 connectDB();
@@ -72,6 +73,9 @@ app.use(passport.session());
 // Setup Swagger documentation
 setupSwagger(app);
 
+// Serve static uploaded files under /api prefix
+app.use("/api/uploads", express.static("uploads"));
+
 // Routes
 app.get("/api/health", (req: Request, res: Response) => {
   res.status(200).send("OK");
@@ -81,6 +85,7 @@ app.use("/api/dishes", dishRoutes);
 app.use("/api/menus", menuRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Global Error Handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

@@ -11,12 +11,20 @@ class DishApi {
     const url = `${this.baseUrl}${endpoint}`;
     const config = {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
       credentials: 'include',
     };
+
+    // Only set JSON content type if not sending FormData
+    if (!(options.body instanceof FormData)) {
+      config.headers = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      };
+    } else {
+      config.headers = {
+        ...options.headers,
+      };
+    }
 
     try {
       const response = await fetch(url, config);
@@ -36,12 +44,11 @@ class DishApi {
   /**
    * Pobiera listę dań z paginacją i filtrowaniem.
    * Domyślnie pobiera tylko aktywne dania.
-   * @param {object} filters - Opcjonalne filtry, np. { page: 1, limit: 10, category: 'zupa', isActive: true }
+   * @param {object} filters - Opcjonalne filtry, np. { page: 1, limit: 10, category: 'zupa' }
    * @returns {Promise<Object>} Obiekt zawierający { dishes, currentPage, totalPages, totalDishes }.
    */
   getAll(filters = {}) {
-    // Domyślnie filtrujemy, aby pokazywać tylko aktywne dania, zgodnie z logiką kontrolera
-    const defaultFilters = { isActive: false };
+    const defaultFilters = { };   
     const allFilters = { ...defaultFilters, ...filters };
 
     const params = new URLSearchParams(allFilters);
@@ -61,11 +68,34 @@ class DishApi {
   /**
    * Tworzy nowe danie.
    * @param {object} dishData - Dane nowego dania.
-   * @returns {Promise<Object>} Utworzone danie.
+   * @returns {Promise<Object>} Utworzone danie.  
    */
   create(dishData) {
     // Usuwamy puste _id z formularza, jeśli istnieje
     const { _id, ...data } = dishData;
+    return this._request('', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Tworzy nowe danie z plikiem obrazu.
+   * @param {object} dishData - Dane nowego dania.
+   * @param {File} imageFile - Plik obrazu (opcjonalny).
+   * @returns {Promise<Object>} Utworzone danie.  
+   */
+  async createWithImage(dishData, imageFile = null) {
+    // Usuwamy puste _id z formularza, jeśli istnieje
+    const { _id, ...data } = dishData;
+    
+    if (imageFile) {
+      // Upload image first
+      const fileUploadService = (await import('./fileUploadService')).default;
+      const uploadResult = await fileUploadService.uploadFile(imageFile, 'dish-image');
+      data.imageUrl = uploadResult.file.url;
+    }
+    
     return this._request('', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -86,7 +116,41 @@ class DishApi {
   }
 
   /**
-   * Usuwa danie (soft delete - ustawia isActive: false).
+   * Aktualizuje istniejące danie z możliwością dodania nowego obrazu.
+   * @param {string} dishId - ID dania do aktualizacji.
+   * @param {object} dishData - Nowe dane dla dania.
+   * @param {File} imageFile - Nowy plik obrazu (opcjonalny).
+   * @returns {Promise<Object>} Zaktualizowane danie.
+   */
+  async updateWithImage(dishId, dishData, imageFile = null) {
+    const data = { ...dishData };
+    
+    if (imageFile) {
+      // Upload new image first
+      const fileUploadService = (await import('./fileUploadService')).default;
+      
+      // Delete old image if it exists
+      if (data.imageUrl) {
+        try {
+          await fileUploadService.deleteFile(data.imageUrl);
+        } catch (error) {
+          console.warn('Could not delete old image:', error);
+        }
+      }
+      
+      // Upload new image
+      const uploadResult = await fileUploadService.uploadFile(imageFile, 'dish-image');
+      data.imageUrl = uploadResult.file.url;
+    }
+    
+    return this._request(`/${dishId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Usuwa danie (soft delete).
    * @param {string} dishId - ID dania do dezaktywacji.
    * @returns {Promise<Object>} Obiekt z komunikatem od serwera.
    */

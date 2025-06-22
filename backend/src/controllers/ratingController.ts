@@ -248,7 +248,6 @@ export const getRatingsForDish: RequestHandler = async (
   try {
     const dish = await Dish.findById(dishId);
     if (!dish) {
-      // No need to check isActive for admin view of ratings
       res.status(404).json({ message: "Dish not found." });
       return;
     }

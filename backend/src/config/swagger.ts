@@ -90,7 +90,14 @@ const options: swaggerJSDoc.Options = {
             },
             category: {
               type: "string",
-              enum: ["starter", "main", "dessert", "drink"],
+              enum: [
+                "danie główne",
+                "zupa",
+                "deser",
+                "wegetariańskie",
+                "dodatek",
+                "napój",
+              ],
               description: "Dish category",
             },
             allergens: {

@@ -171,3 +171,17 @@
   border: 1px dashed #ddd;
   border-radius: 5px;
 }
+
+/* File upload related styles */
+.current-image-info {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f0f8ff;
+  border: 1px solid #d1ecf1;
+  border-radius: 4px;
+}
+
+.current-image-info small {
+  color: #31708f;
+  font-size: 0.85em;
+}
