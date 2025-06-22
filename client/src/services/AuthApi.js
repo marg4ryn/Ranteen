@@ -52,7 +52,7 @@ class AuthApi {
 
   async getPendingUsers() {
     try {
-      const response = await fetch('/api/admin/students/pending');
+      const response = await fetch(`${this.baseUrl}/admin/pending-students`);
 
       if (!response.ok) {
         return [];
@@ -68,7 +68,7 @@ class AuthApi {
 
   async approveUser(userId) {
     try {
-      const response = await fetch(`/api/admin/students/${userId}/approve`, {
+      const response = await fetch(`${this.baseUrl}/admin/students/${userId}/approve`, {
         method: 'PUT',
       });
       return await response.json();
@@ -80,7 +80,7 @@ class AuthApi {
 
   async rejectUser(userId, reason) {
     try {
-      const response = await fetch(`/api/admin/students/${userId}/reject`, {
+      const response = await fetch(`${this.baseUrl}/admin/students/${userId}/reject`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

@@ -244,13 +244,13 @@ export const rejectStudent = async (req: Request, res: Response) => {
     });
 
     if (!student) {
-      return res.status(404).json({ message: "Pending student not found." });
+      res.status(404).json({ message: "Pending student not found." }); return;
     }
 
     res.json({ message: `Student ${student.name} rejected and removed successfully.` });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error rejecting student." });
+    res.status(500).json({ message: "Error rejecting student." }); return;
   }
 };
 

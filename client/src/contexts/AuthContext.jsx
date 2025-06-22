@@ -15,22 +15,21 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const checkCurrentUser = async () => {
-    try {
-      const currentUser = await authApi.getMe();
-      setUser(currentUser);
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const checkCurrentUser = async () => {
+      try {
+        const currentUser = await authApi.getMe();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  checkCurrentUser();
-}, []);
-
+    checkCurrentUser();
+  }, []);
 
   const isAuthenticated = !!user;
   const isVerified = user?.status === 'VERIFIED' || user?.isApproved === true;

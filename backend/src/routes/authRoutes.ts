@@ -299,4 +299,11 @@ router.patch(
   authController.approveStudent
 );
 
+router.patch(
+  "/admin/students/:studentId/reject",
+  isAuthenticated,
+  isAdmin,
+  authController.rejectStudent
+);
+
 export default router;
