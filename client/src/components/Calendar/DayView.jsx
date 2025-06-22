@@ -6,10 +6,10 @@ import DishList from '../Dishes/DishList';
 import './DayView.css';
 
 const DayView = ({ compact = false }) => {
-  const { selectedDate, setSelectedDate, setMenus } = useContext(MenuContext); // Dodano setMenus
+  const { selectedDate, setSelectedDate } = useContext(MenuContext); // Removed setMenus
   const { date: dateParam } = useParams();
   const [menu, setMenu] = useState(null);
-  const [error, setError] = useState(null); // Dodano obsługę błędu
+  const [error, setError] = useState(null);
 
   const formatDate = (date) => date.toISOString().split('T')[0]; // yyyy-mm-dd
 
@@ -17,22 +17,24 @@ const DayView = ({ compact = false }) => {
     const fetchMenu = async (date) => {
       try {
         const dateString = formatDate(date);
-        const data = await getMenuByDate(dateString); // Poprawione wywołanie
-        const menusArray = data ? [data] : [];
-        setMenus(menusArray);
-
-        const foundMenu = menusArray.find(m => m.date === dateString);
-        setMenu(foundMenu);
+        const data = await getMenuByDate(dateString);
+        
+        // Sprawdź czy to jest pełne menu z _id czy odpowiedź z pustymi daniami
+        if (data && data._id) {
+          // Pełne menu istnieje
+          setMenu(data);
+        } else if (data && Array.isArray(data.dishes) && data.dishes.length === 0) {
+          // Backend zwrócił { dishes: [] } - brak menu na ten dzień
+          setMenu(null);
+        } else {
+          // Nieoczekiwany format odpowiedzi
+          setMenu(null);
+        }
+        setError(null);
       } catch (err) {
         const msg = err.message || 'Unknown error';
-        if (msg.includes('Not Found') || msg.includes('404')) {
-          setMenus([]);
-          setMenu(undefined);
-        } else {
-          setError(msg);
-          setMenus([]);
-          setMenu(undefined);
-        }
+        setError(msg);
+        setMenu(null);
       }
     };
 
@@ -49,7 +51,7 @@ const DayView = ({ compact = false }) => {
     }
 
     fetchMenu(effectiveDate);
-  }, [dateParam]);
+  }, [dateParam, selectedDate]);
   
   // Format daty do wyświetlenia
   const formatDateForDisplay = (date) => {

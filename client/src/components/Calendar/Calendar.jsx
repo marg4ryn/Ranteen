@@ -11,7 +11,7 @@ const toDateString = (date) => {
   return date.toISOString().split('T')[0];
 };
 
-const Calendar = () => {
+const Calendar = ({ showDayView = true }) => {
   const { menus, setMenus, selectedDate, setSelectedDate } = useContext(MenuContext);
   const navigate = useNavigate();
   
@@ -20,6 +20,12 @@ const Calendar = () => {
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Sync calendar view with selected date
+  useEffect(() => {
+    setCurrentMonth(selectedDate.getMonth());
+    setCurrentYear(selectedDate.getFullYear());
+  }, [selectedDate]);
 
   useEffect(() => {
     const fetchMenusForMonth = async () => {
@@ -99,13 +105,16 @@ const Calendar = () => {
     
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentYear, currentMonth, day);
+      const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
       const isToday = toDateString(date) === toDateString(new Date());
+      const isSelected = toDateString(date) === toDateString(selectedDate);
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
       const hasMenuForDay = hasMenu(day);
       
       calendarDays.push(
         <div 
           key={`day-${day}`} 
-          className={`calendar-day ${isToday ? 'today' : ''} ${hasMenuForDay ? 'has-menu' : ''}`}
+          className={`calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${isWeekend ? 'weekend' : ''} ${hasMenuForDay ? 'has-menu' : ''}`}
           onClick={() => handleDayClick(day)}
         >
           <span className="day-number">{day}</span>
@@ -137,10 +146,12 @@ const Calendar = () => {
         </div>
       </div>
       
-      <div className="today-menu">
-        <h3>{isSelectedDateToday ? "Menu na dziś" : `Menu na ${selectedDate.toLocaleDateString()}`}</h3>
-        <DayView compact={false} />
-      </div>
+      {showDayView && (
+        <div className="today-menu">
+          <h3>{isSelectedDateToday ? "Menu na dziś" : `Menu na ${selectedDate.toLocaleDateString()}`}</h3>
+          <DayView compact={false} />
+        </div>
+      )}
     </div>
   );
 };
