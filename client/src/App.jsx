@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { MenuProvider } from './contexts/MenuContext';
-import authApi from './services/AuthApi';
+import { AuthContext } from './contexts/AuthContext';
 
+import Spinner from './components/Layout/Spinner';
 import Header from './components/Layout/Header';
 import Footer from './components/Layout/Footer';
 import Sidebar from './components/Layout/Sidebar';
@@ -20,90 +19,48 @@ import CommentModeration from './components/Admin/CommentModeration';
 import './App.css';
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const { isAuthenticated, isVerified, isAdmin, loading } = useContext(AuthContext);
 
-  useEffect(() => {
-    const checkCurrentUser = async () => {
-      const currentUser = await authApi.getMe();
-      setUser(currentUser);
-    };
-
-    if (!(user === null)) {
-      checkCurrentUser();
-    }
-    setIsAuthLoading(false);
-  }, []); 
-
-  const isAuthenticated = !!user;
-  const isVerified = user && user.status === 'VERIFIED';
-  const isAdmin = user && user.role === 'ADMINISTRATOR';
-
-  const handleLogout = async () => {
-    await authApi.logout();
-    setUser(null);
-  };
-
-    if (isAuthLoading) {
-    return <div>Ładowanie aplikacji...</div>;
+  if (loading) {
+    return <Spinner />;
   }
 
   return (
-    <AuthProvider>
-      <MenuProvider>
-        <Router>
-          <div className="app-container">
-            <Header />
-            <div className="main-content">
-              <Sidebar />
-              <div className="content-area">
-                <Routes>
-                  {/* --- TRASY PUBLICZNE --- */}
-                  <Route path="/" element={<Calendar />} />
-                  <Route path="/day/:date" element={<DayView />} />
+    <Router>
+      <div className="app-container">
+        <Header />
+        <div className="main-content">
+          <Sidebar />
+          <div className="content-area">
+            <Routes>
+              {/* Tutaj bez zmian */}
+              {/* --- TRASY PUBLICZNE --- */}
+              <Route path="/" element={<Calendar />} />
+              <Route path="/day/:date" element={<DayView />} />
 
-                  {/* --- TRASY AUTENTYKACJI --- */}
-                  <Route 
-                    path="/login" 
-                    element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />} 
-                  />
-                  <Route 
-                    path="/admin/login" 
-                    element={!isAuthenticated ? <AdminLogin /> : <Navigate to="/admin/menu" />} 
-                  />
-                  <Route 
-                    path="/verification-pending" 
-                    element={isAuthenticated && !isVerified ? <VerificationPending /> : <Navigate to="/" />} 
-                  />
+              {/* --- TRASY AUTENTYKACJI --- */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route 
+                path="/verification-pending" 
+                element={isAuthenticated && !isVerified ? <VerificationPending /> : <Navigate to="/" />} 
+              />
 
-                  {/* --- TRASY CHRONIONE DLA ADMINA --- */}
-                  <Route 
-                    path="/admin/menu" 
-                    element={<MenuManagement />} 
-                  />
-                  <Route 
-                    path="/admin/dishes" 
-                    element={<DishManagement />} 
-                  />
-                  <Route 
-                    path="/admin/users" 
-                    element={<UserVerification />} 
-                  />
-                  <Route 
-                    path="/admin/comments" 
-                    element={<CommentModeration />} 
-                  />
+              {/* --- TRASY CHRONIONE DLA ADMINA --- */}
+              {/* Tutaj możesz dodać dodatkową logikę sprawdzającą `isAdmin` i `isVerified` */}
+              <Route path="/admin/menu" element={isAdmin ? <MenuManagement /> : <Navigate to="/" />} />
+              <Route path="/admin/dishes" element={isAdmin ? <DishManagement /> : <Navigate to="/" />} />
+              <Route path="/admin/users" element={isAdmin ? <UserVerification /> : <Navigate to="/" />} />
+              <Route path="/admin/comments" element={isAdmin ? <CommentModeration /> : <Navigate to="/" />} />
 
-                  {/* Catch-all route dla nieistniejących stron */}
-                  <Route path="*" element={<Navigate to="/" />} />
-                </Routes>
-              </div>
-            </div>
-            <Footer />
+              {/* Catch-all route dla nieistniejących stron */}
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
           </div>
-        </Router>
-      </MenuProvider>
-     </AuthProvider>
+        </div>
+        <Footer />
+      </div>
+    </Router>
   );
 }
 

@@ -85,24 +85,24 @@ const Sidebar = () => {
         </div>
       )}
 
-      {isAdmin ? (
+      {isAdmin && isAuthenticated ? (
         <div className="admin-sidebar">
           <h3>Panel administratora</h3>
-          <ul className="sidebar-menu">
-            <li><a onClick={() => handleNavigation('/')}>Podgląd stołówki</a></li>
-            <li><a onClick={() => handleNavigation('/admin/menu')}>Zarządzanie menu</a></li>
-            <li><a onClick={() => handleNavigation('/admin/dishes')}>Zarządzanie daniami</a></li>
-            <li><a onClick={() => handleNavigation('/admin/users')}>Weryfikacja użytkowników</a></li>
-            <li><a onClick={() => handleNavigation('/admin/comments')}>Moderacja komentarzy</a></li>
-          </ul>
+            <ul className="sidebar-menu">
+              <li key="preview"><a onClick={() => handleNavigation('/')}>Podgląd stołówki</a></li>
+              <li key="menu"><a onClick={() => handleNavigation('/admin/menu')}>Zarządzanie menu</a></li>
+              <li key="dishes"><a onClick={() => handleNavigation('/admin/dishes')}>Zarządzanie daniami</a></li>
+              <li key="users"><a onClick={() => handleNavigation('/admin/users')}>Weryfikacja użytkowników</a></li>
+              <li key="comments"><a onClick={() => handleNavigation('/admin/comments')}>Moderacja komentarzy</a></li>
+            </ul>
         </div>
       ) : (
         <div className="student-sidebar">
           <div className="quick-links">
             <h3>Szybki dostęp</h3>
             <ul className="sidebar-menu">
-              <li><a onClick={() => handleNavigation('/')}>Kalendarz</a></li>
-              <li>
+              <li key="calendar"><a onClick={() => handleNavigation('/')}>Kalendarz</a></li>
+              <li key="today">
                 <a onClick={() => handleNavigation(`/day/${formatDate(new Date())}`)}>
                   Dzisiejsze danie
                 </a>
@@ -115,7 +115,7 @@ const Sidebar = () => {
             {upcomingMenus.length > 0 ? (
               <ul className="sidebar-menu">
                 {upcomingMenus.map(menu => (
-                  <li key={menu.id}>
+                  <li key={menu.date}>
                     <a onClick={() => handleNavigation(`/day/${menu.date}`)}>
                       {formatDateForDisplay(menu.date)}
                       <span className="dish-count">
