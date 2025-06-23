@@ -10,7 +10,8 @@
     "test": "jest --detectOpenHandles",
     "seed": "ts-node src/scripts/seedDB.ts",
     "seed-timerange": "ts-node src/scripts/seedTimeRange.ts",
-    "drop-collections": "ts-node src/scripts/dropCollections.ts"
+    "drop-collections": "ts-node src/scripts/dropCollections.ts",
+    "seed-admin": "ts-node src/scripts/seedAdmin.ts"
   },
   "repository": {
     "type": "git",

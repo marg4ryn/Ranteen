@@ -5,9 +5,9 @@ npm-debug.log*
 # Build output
 dist
 
-# Environment files
-.env
+# Environment files (exclude examples, but keep .env for Docker)
 .env.local
+.env.example
 .env.*.local
 
 # IDE files
