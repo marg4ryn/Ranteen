@@ -65,8 +65,8 @@ const Header = () => {
         <div className="user-section">
           {isAuthenticated ? (
             <div className="user-info">
-              {user.avatar && (
-                <img src={user.avatar} alt={user.name} className="user-avatar" />
+              {user.profilePictureUrl && (
+                <img src={user.profilePictureUrl} alt={user.name} className="user-avatar" />
               )}
               <span className="user-name">{user.name}</span>
               <button onClick={logout} className="logout-btn">Wyloguj</button>

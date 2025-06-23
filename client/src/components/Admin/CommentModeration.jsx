@@ -173,7 +173,7 @@ const CommentModeration = () => {
                 <div className="comment-header">
                   <div className="user-info">
                     <img 
-                      src={comment.student?.profilePictureUrl || '/default-avatar.png'} 
+                      src={comment.student?.profilePictureUrl || 'https://t3.ftcdn.net/jpg/06/33/54/78/360_F_633547842_AugYzexTpMJ9z1YcpTKUBoqBF0CUCk10.jpg'} 
                       alt={comment.student?.name || 'Student'} 
                       className="user-avatar" 
                       onError={(e) => {

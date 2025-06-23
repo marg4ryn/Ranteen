@@ -42,6 +42,13 @@ const DishCard = ({ dish, date, compact = false, isFuture = false }) => {
     }
   }, [dish._id, date, isVerified, isFuture]);
 
+  // Load comments when component mounts to get the count
+  useEffect(() => {
+    if (!isFuture && date) {
+      loadComments();
+    }
+  }, [dish._id, date, isFuture]);
+
   // Update average rating when dish prop changes
   useEffect(() => {
     setCurrentAverageRating(dish.averageRating || 0);
@@ -96,9 +103,7 @@ const DishCard = ({ dish, date, compact = false, isFuture = false }) => {
   const toggleComments = () => {
     if (!compact) {
       setShowComments(!showComments);
-      if (!showComments && comments.length === 0) {
-        loadComments();
-      }
+      // Comments are already loaded, no need to load them again
     }
   };
 

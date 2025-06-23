@@ -28,7 +28,7 @@ const CommentList = ({ comments }) => {
               <div className="comment-header">
                 <div className="comment-author">
                   <img 
-                    src={comment.student?.profilePictureUrl || 'https://via.placeholder.com/40'} 
+                    src={comment.student?.profilePictureUrl || 'https://t3.ftcdn.net/jpg/06/33/54/78/360_F_633547842_AugYzexTpMJ9z1YcpTKUBoqBF0CUCk10.jpg'} 
                     alt={comment.student?.name || 'Użytkownik'} 
                     className="author-avatar" 
                   />

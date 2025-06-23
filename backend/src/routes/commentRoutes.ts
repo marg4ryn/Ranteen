@@ -265,7 +265,6 @@ router.delete(
 router.get(
   "/dish/:dishId/approved",
   isAuthenticated,
-  isStudentApproved,
   commentController.getApprovedCommentsForDishValidationRules,
   commentController.getApprovedCommentsForDish
 );
