@@ -218,7 +218,7 @@ export const updateMyComment: RequestHandler = async (
   }
 };
 
-const deleteMyCommentValidationRules = [
+export const deleteMyCommentValidationRules = [
   param("commentId").isMongoId().withMessage("Valid Comment ID is required."),
 ];
 
@@ -259,7 +259,7 @@ export const deleteMyComment: RequestHandler = async (
   }
 };
 
-const getApprovedCommentsForDishValidationRules = [
+export const getApprovedCommentsForDishValidationRules = [
   param("dishId").isMongoId().withMessage("Valid Dish ID is required."),
   query("page").optional().isInt({ min: 1 }).toInt(),
   query("limit").optional().isInt({ min: 1, max: 100 }).toInt(),
@@ -328,7 +328,7 @@ export const getApprovedCommentsForDish: RequestHandler = async (
 };
 // --- Admin Comment Moderation ---
 
-const getCommentsForDishValidationRules = [
+export const getCommentsForModerationValidationRules = [
   query("page").optional().isInt({ min: 1 }).toInt(),
   query("limit").optional().isInt({ min: 1, max: 100 }).toInt(),
   query("status")
@@ -363,7 +363,6 @@ export const getCommentsForModeration: RequestHandler = async (
     const comments = await Comment.find(queryFilter)
       .populate("student", "name email profilePictureUrl")
       .populate("dish", "name")
-      .populate("menu", "date") // For context of when it was served
       .sort({ createdAt: 1 }) // Show oldest pending first for moderation
       .skip((page - 1) * limit)
       .limit(limit);
@@ -383,7 +382,7 @@ export const getCommentsForModeration: RequestHandler = async (
   }
 };
 
-const moderateCommentValidationRules = [
+export const moderateCommentValidationRules = [
   param("commentId").isMongoId().withMessage("Valid Comment ID is required."),
   body("status")
     .isIn(["approved", "rejected"])

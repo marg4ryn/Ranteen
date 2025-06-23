@@ -116,6 +116,7 @@ router.get(
   isAuthenticated,
   isStudent,
   isStudentApproved,
+  commentController.getMyCommentsValidationRules,
   commentController.getMyComments
 );
 
@@ -190,6 +191,7 @@ router.put(
   isAuthenticated,
   isStudent,
   isStudentApproved,
+  commentController.updateMyCommentValidationRules,
   commentController.updateMyComment
 );
 router.delete(
@@ -197,6 +199,7 @@ router.delete(
   isAuthenticated,
   isStudent,
   isStudentApproved,
+  commentController.deleteMyCommentValidationRules,
   commentController.deleteMyComment
 );
 
@@ -263,6 +266,7 @@ router.get(
   "/dish/:dishId/approved",
   isAuthenticated,
   isStudentApproved,
+  commentController.getApprovedCommentsForDishValidationRules,
   commentController.getApprovedCommentsForDish
 );
 
@@ -320,6 +324,7 @@ router.get(
   "/admin/moderate",
   isAuthenticated,
   isAdmin,
+  commentController.getCommentsForModerationValidationRules,
   commentController.getCommentsForModeration
 );
 
@@ -345,15 +350,15 @@ router.get(
  *           schema:
  *             type: object
  *             required:
- *               - action
+ *               - status
  *             properties:
- *               action:
+ *               status:
  *                 type: string
- *                 enum: [approve, reject]
- *                 description: Moderation action
+ *                 enum: [approved, rejected]
+ *                 description: Moderation status
  *               reason:
  *                 type: string
- *                 description: Reason for rejection (required if action is reject)
+ *                 description: Reason for rejection (optional)
  *     responses:
  *       200:
  *         description: Comment successfully moderated
@@ -374,6 +379,7 @@ router.patch(
   "/admin/moderate/:commentId",
   isAuthenticated,
   isAdmin,
+  commentController.moderateCommentValidationRules,
   commentController.moderateComment
 );
 

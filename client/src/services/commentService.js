@@ -108,7 +108,7 @@ class CommentService {
 
   /**
    * Get all comments for moderation (Admin only)
-   * @param {object} options - Query options (page, limit, status, dishId)
+   * @param {object} options - Query options (page, limit, status, dishId, studentId)
    * @returns {Promise<Object>} Comments data with pagination
    */
   async getAllCommentsForModeration(options = {}) {
@@ -117,21 +117,22 @@ class CommentService {
     if (options.limit) params.append('limit', options.limit.toString());
     if (options.status) params.append('status', options.status);
     if (options.dishId) params.append('dishId', options.dishId);
+    if (options.studentId) params.append('studentId', options.studentId);
 
     const queryString = params.toString() ? `?${params.toString()}` : '';
-    return this._request(`/all${queryString}`);
+    return this._request(`/admin/moderate${queryString}`);
   }
 
   /**
    * Moderate a comment (Admin only)
    * @param {string} commentId - Comment ID
-   * @param {string} action - 'approve' or 'reject'
+   * @param {string} status - 'approved' or 'rejected'
    * @returns {Promise<Object>} Updated comment object
    */
-  async moderateComment(commentId, action) {
-    return this._request(`/${commentId}/moderate`, {
+  async moderateComment(commentId, status) {
+    return this._request(`/admin/moderate/${commentId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ action }),
+      body: JSON.stringify({ status }),
     });
   }
 }
