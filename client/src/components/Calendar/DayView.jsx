@@ -1,15 +1,19 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { MenuContext } from '../../contexts/MenuContext';
+import { AuthContext } from '../../contexts/AuthContext';
 import { getMenuByDate } from '../../services/menuService'; // Poprawiony import
 import DishList from '../Dishes/DishList';
+import { DailyAnalytics } from '../Analytics';
 import './DayView.css';
 
 const DayView = ({ compact = false }) => {
   const { selectedDate, setSelectedDate } = useContext(MenuContext); // Removed setMenus
+  const { isAdmin } = useContext(AuthContext);
   const { date: dateParam } = useParams();
   const [menu, setMenu] = useState(null);
   const [error, setError] = useState(null);
+  const [showDailyAnalytics, setShowDailyAnalytics] = useState(false);
 
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -91,7 +95,17 @@ const DayView = ({ compact = false }) => {
   
   return (
     <div className={`day-view ${compact ? 'compact' : ''}`}>
-      <h2>{getDayTitle()} {formatDateForDisplay(selectedDate)}</h2>
+      <div className="day-view-header">
+        <h2>{getDayTitle()} {formatDateForDisplay(selectedDate)}</h2>
+        {isAdmin && menu && (
+          <button 
+            onClick={() => setShowDailyAnalytics(true)}
+            className="analytics-day-btn"
+          >
+            📊 Analityka dnia
+          </button>
+        )}
+      </div>
       
       {menu ? (
         <>
@@ -101,6 +115,14 @@ const DayView = ({ compact = false }) => {
         <div className="no-menu">
           <p>Brak zaplanowanego menu na ten dzień.</p>
         </div>
+      )}
+
+      {/* Daily Analytics Modal */}
+      {showDailyAnalytics && (
+        <DailyAnalytics
+          date={formatDate(selectedDate)}
+          onClose={() => setShowDailyAnalytics(false)}
+        />
       )}
     </div>
   );

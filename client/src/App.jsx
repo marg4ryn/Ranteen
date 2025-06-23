@@ -15,6 +15,7 @@ import MenuManagement from './components/Admin/MenuManagement';
 import DishManagement from './components/Admin/DishManagement';
 import UserVerification from './components/Admin/UserVerification';
 import CommentModeration from './components/Admin/CommentModeration';
+import { Analytics } from './components/Analytics';
 
 import './App.css';
 
@@ -52,6 +53,7 @@ function App() {
               <Route path="/admin/dishes" element={isAdmin ? <DishManagement /> : <Navigate to="/" />} />
               <Route path="/admin/users" element={isAdmin ? <UserVerification /> : <Navigate to="/" />} />
               <Route path="/admin/comments" element={isAdmin ? <CommentModeration /> : <Navigate to="/" />} />
+              <Route path="/admin/analytics" element={isAdmin ? <Analytics /> : <Navigate to="/" />} />
 
               {/* Catch-all route dla nieistniejących stron */}
               <Route path="*" element={<Navigate to="/" />} />

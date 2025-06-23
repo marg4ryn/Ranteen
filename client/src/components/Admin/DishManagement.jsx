@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import dishApi from '../../services/dishService';
 import FileUpload from '../FileUpload/FileUpload';
+import { DishAnalytics } from '../Analytics';
 import './DishManagement.css';
 
 const DishManagement = () => {
@@ -11,6 +12,10 @@ const DishManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState(null);
+  
+  // Analytics state
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [selectedDishForAnalytics, setSelectedDishForAnalytics] = useState(null);
   
   const initialFormState = {
     _id: null,
@@ -128,6 +133,17 @@ const DishManagement = () => {
     setSelectedImageFile(file);
   };
 
+  // Analytics functions
+  const handleShowAnalytics = (dish) => {
+    setSelectedDishForAnalytics(dish);
+    setShowAnalytics(true);
+  };
+
+  const handleCloseAnalytics = () => {
+    setShowAnalytics(false);
+    setSelectedDishForAnalytics(null);
+  };
+
   const categories = ["danie główne", "zupa", "deser", "wegetariańskie", "dodatek", "napój"];
   const dietaryOptions = ["vegetarian", "vegan", "gluten-free", "dairy-free", "nut-free"];
 
@@ -230,6 +246,9 @@ const DishManagement = () => {
                   <button onClick={() => handleEditDish(dish)} className="edit-dish-btn">
                     Edytuj
                   </button>
+                  <button onClick={() => handleShowAnalytics(dish)} className="analytics-dish-btn">
+                    Analityka
+                  </button>
                   <button onClick={() => handleDeleteDish(dish._id)} className="delete-dish-btn">
                     Usuń
                   </button>
@@ -239,6 +258,14 @@ const DishManagement = () => {
           </ul>
         )}
       </div>
+
+      {/* Analytics Modal */}
+      {showAnalytics && selectedDishForAnalytics && (
+        <DishAnalytics
+          dishId={selectedDishForAnalytics._id}
+          onClose={handleCloseAnalytics}
+        />
+      )}
     </div>
   );
 };

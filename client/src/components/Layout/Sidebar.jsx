@@ -94,6 +94,7 @@ const Sidebar = () => {
               <li key="dishes"><a onClick={() => handleNavigation('/admin/dishes')}>Zarządzanie daniami</a></li>
               <li key="users"><a onClick={() => handleNavigation('/admin/users')}>Weryfikacja użytkowników</a></li>
               <li key="comments"><a onClick={() => handleNavigation('/admin/comments')}>Moderacja komentarzy</a></li>
+              <li key="analytics"><a onClick={() => handleNavigation('/admin/analytics')}>Analityka ocen</a></li>
             </ul>
         </div>
       ) : (

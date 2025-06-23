@@ -16,6 +16,7 @@ import menuRoutes from "./routes/menuRoutes";
 import ratingRoutes from "./routes/ratingRoutes";
 import commentRoutes from "./routes/commentRoutes";
 import uploadRoutes from "./routes/uploadRoutes";
+import analyticsRoutes from "./routes/analyticsRoutes";
 
 dotenv.config();
 connectDB();
@@ -86,6 +87,7 @@ app.use("/api/menus", menuRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // Global Error Handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

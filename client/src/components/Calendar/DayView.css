@@ -1,15 +1,50 @@
 .day-view {
     width: 100%;
   }
+
+  .day-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
   
   .day-view h2 {
-    margin-bottom: 24px;
+    margin: 0;
     color: #1976d2;
+  }
+
+  .analytics-day-btn {
+    background-color: #5bc0de;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .analytics-day-btn:hover {
+    background-color: #31b0d5;
   }
   
   .day-view.compact h2 {
     font-size: 18px;
+  }
+
+  .day-view.compact .day-view-header {
     margin-bottom: 16px;
+  }
+
+  .day-view.compact .analytics-day-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
   }
   
   .no-menu {
@@ -18,4 +53,16 @@
     border-radius: 8px;
     text-align: center;
     color: #666;
+  }
+
+  @media (max-width: 768px) {
+    .day-view-header {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+
+    .analytics-day-btn {
+      align-self: center;
+    }
   }
