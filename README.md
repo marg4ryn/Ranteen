@@ -23,7 +23,7 @@
 
 
 ### PL
-# Ranteem
+# Ranteen
 
 **Ranteen** to nowoczesna aplikacja webowa, która rozwiązuje problem braku efektywnego feedbacku w szkolnych stołówkach. Aplikacja pozwala uczniom oceniać i komentować posiłki, a administracji dostarcza cennych danych do optymalizacji menu, redukcji marnowania żywności i lepszego planowania.
 
